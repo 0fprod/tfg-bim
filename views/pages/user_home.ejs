@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <% include ../partials/head %>
+  <script src="/js/sidemenu.js" charset="utf-8"></script>
+  <body>
+    <%- include('../partials/sidemenu', {user : user}) %>
+
+      <div class="content">
+
+        <div class="page-title">
+          Mis proyectos activos
+        </div>
+
+        <div class="repo-container">
+          <% if(sync.length == 0) {%>
+            <div id="message">
+              <p>Ups! Parece que no tienes ningun proyecto activo.</p>
+              <p>
+                Ve a menú(<i class="fa fa-bars"></i>), luego a Todos mis proyectos (<i class="fa fa-list"></i>).
+              </p>
+              <p>
+                Haz click sobre los proyectos y finalmente dale a guardar(<i class="fa fa-save"></i>) para añadirlos a tu lista! <i class="fa fa-smile-o"></i>
+              </p>
+            </div>
+          <% } else { %>
+            <% for(i = 0; i < sync.length; i++) { %>
+              <div class="active-project">
+                <div class="project-name">
+                  <%= sync[i].name %>
+                </div>
+                <div class="project-buttons">
+                  <a href="<%=user.name%>/projects/p/<%=sync[i].name %>?owner=<%= sync[i].owner%>"><i title="Editar" class="edit fa fa-pencil"></i></a>
+                  <a href="https://api.github.com/repos/<%=sync[i].owner%>/<%=sync[i].name%>/zipball/master"><i title="Descargar" class="download fa fa-cloud-download"></i></a>
+                </div>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+
+    <% include ../partials/footer %>
+
+  </body>
+</html>

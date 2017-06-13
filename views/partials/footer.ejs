@@ -1,0 +1,14 @@
+<footer>
+  <span>Francisco J Palacios Rodríguez © 2017</span>
+  <a href="https://github.com/franjpr/tfg-bim">Proyecto</a>
+</footer>
+
+<script type="text/javascript">
+function apiStatus(data) {
+  if(data.status == 'good')
+    $('footer').append($(document.createElement('i')).addClass('fa fa-github fa-2x').css('color','green').attr('Title','Estable'));
+  else
+    $('footer').append($(document.createElement('i')).addClass('fa fa-github fa-2x').css('color','orange').attr('Title','Inestable'));
+}
+</script>
+<script src="https://status.github.com/api/status.json?callback=apiStatus"></script>

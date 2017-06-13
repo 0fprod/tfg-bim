@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <% include ../partials/head.ejs %>
+    <link rel="stylesheet" href="/css/background.css">
+  <script src="/js/index.js" charset="utf-8"></script>
+  <body>
+
+    <div id="loginbox">
+      <div id="left">
+        <input id="uname" type="text" name="username" value="" placeholder="Usuario" required>
+        <input id="passw" type="password" name="password" value="" required>
+        <div id="bot">
+          <a target="_blank" href="https://github.com/join">Registrate</a>
+          <button id="loginbtn"> Iniciar <i class="fa fa-sign-in"></i></button>
+        </div>
+      </div>
+      <div id="right">
+        <img src="/img/logo.png" alt="">
+      </div>
+    </div>
+
+    <div class="overlay"></div>
+    <i id="loading-icon" class="fa fa-spinner fa-pulse fa-4x fa-fw"></i>
+
+  <% include ../partials/footer.ejs %>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "name": "tfg-bim",
+  "version": "1.0.0",
+  "description": "Proyecto final de grado. Gestor de incidencias BIM",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Franjpr/tfg-bim.git"
+  },
+  "keywords": [
+    "BIM",
+    "IFC",
+    "BFC",
+    "GitHub",
+    "ULL"
+  ],
+  "author": "franjpr",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Franjpr/tfg-bim/issues"
+  },
+  "homepage": "https://github.com/Franjpr/tfg-bim#readme",
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "github": "^9.2.0",
+    "mongoose": "^4.9.3",
+    "path": "^0.12.7"
+  }
+}

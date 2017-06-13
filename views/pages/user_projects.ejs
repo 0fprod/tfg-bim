@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <% include ../partials/head %>
+  <script src="/js/sidemenu.js" charset="utf-8"></script>
+  <script src="/js/user_projects.js" charset="utf-8"></script>
+  <body>
+    <%- include('../partials/sidemenu', {user : user}) %>
+
+    <div class="content">
+      <div class="page-title">
+        Todos mis proyectos:
+      </div>
+
+      <div class="repo-container">
+        <% for(i = 0; i < sync.length; i++) { %>
+          <div class="project">
+              <% if (sync[i].marked) {%>
+                <div class="sync" owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
+                  <%= sync[i].name %> <i class="fa fa-check-circle synced"></i>
+                </div>
+                <i class="fa fa-times-circle fa-2x delete-repo"></i>
+              <% } else { %>
+                <div owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
+                  <%= sync[i].name %>
+                </div>
+                <i class="fa fa-times-circle fa-2x delete-repo"></i>
+              <% } %>
+          </div>
+        <% } %>
+      </div>
+      <div id="button-container">
+
+        <span id="createbtn" class="fa-stack fa-lg btn create" title="Crear proyecto">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
+        </span>
+
+        <span id="savebtn" class="fa-stack fa-lg btn save" title="Guardar proyectos activos">
+          <i class="fa fa-circle fa-stack-2x"></i>
+          <i class="fa fa-save fa-stack-1x fa-inverse"></i>
+        </span>
+
+      </div>
+    </div>
+
+    <div class="modal-container">
+
+    </div>
+
+    <div class="overlay"></div>
+    <i id="loading-icon" class="fa fa-spinner fa-pulse fa-4x fa-fw"></i>
+
+    <% include ../partials/footer %>
+  </body>
+</html>

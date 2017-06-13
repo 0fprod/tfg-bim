@@ -1,0 +1,556 @@
+//Colors
+$softpurple : #8C30E8;
+$softblue: #9ACCCD;
+$softgreen: #8FD8A0;
+$softpink: #D9A790;
+$litegreen: #29ff5b;
+$liteblue: #3dfcff;
+$softorange : #F79646;
+
+//Fonts
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+$huge: 48px;
+$bigger: 36px;
+$big: 24px;
+$medium: 18px;
+$normal: 14px;
+$small: 12px;
+
+html{
+  background: url('/img/pages_bg.jpg') no-repeat center center fixed;
+  -webkit-background-size: cover !important;
+  -moz-background-size: cover !important;
+  -o-background-size: cover !important;
+  background-size: cover !important;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+// Commons
+.overlay{
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  z-index: 3;
+  display: none;
+  background-color: gray;
+}
+
+#loading-icon{
+  position: absolute;
+  top: 40%;
+  left: 45%;
+  display: none;
+  z-index: 2;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////       Index home page       /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+#loginbox{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-left: -200px;
+  margin-top: -200px;
+  width: 390px;
+  height: 200px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  border: 1px solid $softpurple;
+  border-radius: 5px;
+  #left{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    input{
+      margin: 10px;
+      padding: 2px;
+      height: 20px;
+      width: auto;
+      font-size: $normal;
+    }
+    #bot{
+      padding: 4px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+  #right{
+    display: flex;
+    justify-content: center;
+    img{
+      width: 100%;
+    }
+  }
+}
+
+#loginbtn{
+  background-color: $softpurple;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s;
+  &:hover{
+    border-left: solid 2px darken($softpurple, 20);
+    transition: 0.2s;
+  }
+}
+
+#message{
+  background-color: $softpurple;
+  color: white;
+  border-radius: 10px;
+  padding: 5px;
+  font-size: 24px;
+  line-height: 40px;
+  margin: auto;
+  cursor: default;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////    END Index home page       ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////        USER MENU            /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+#menu{
+  position: absolute;
+  top: -150px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  background-color: $softblue;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  color: $softpink;
+  transition: 1s;
+  width: 150px;
+  z-index: 2;
+  #useravatar{
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    img{
+      max-width: 70%;
+      align-self: center;
+    }
+    #username{
+      display: block;
+      text-align: center;
+    }
+  }
+  #buttons{
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    padding-top: 10px;
+    i{
+      cursor: pointer;
+      transition: 0.5s;
+      &:hover{
+        transition: 0.5s;
+        color: darken($softpink, 20);
+      }
+    }
+  }
+}
+
+.show{
+  top: 0px !important;
+  transition: 1s;
+}
+
+#menubars{
+  color: black;
+  position: relative;
+  display: block;
+  top: 18px;
+  left: 10px;
+  cursor: pointer;
+}
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////       END USER MENU         /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////       User Settings         /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+.content{
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+}
+
+.repo-container{
+  display: flex;
+  overflow-y: scroll;
+  flex-wrap: wrap;
+  max-height: 450px;
+}
+
+.page-title{
+  padding: 20px;
+  margin: auto;
+  font-size: $huge;
+}
+
+.project{
+  position: relative;
+  background-color: $softpurple;
+  width: 200px;
+  height: 150px;
+  margin: 4px auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle;
+  word-break: break-all;
+  padding: 0px 5px;
+  color: white;
+  font-size: $normal;
+  cursor: pointer;
+  .synced{
+    color: lightgreen;
+  }
+  &:hover{
+    box-shadow: inset 0px 0px 0px 2px black
+  }
+}
+
+#button-container{
+  display: flex;
+  justify-content: flex-start;
+  .btn{
+    color: white;
+    font-size: $big;
+    cursor: pointer;
+  }
+  .save{
+    color: $softblue;
+    transition: 0.5s;
+    &:hover{
+      color: darken($softblue, 30);
+      transition: 0.5s;
+    }
+  }
+  .create{
+    color: $softgreen;
+    transition: 0.5s;
+    &:hover{
+      color: darken($softgreen, 30);
+      transition: 0.5s;
+    }
+  }
+}
+
+.create-repo{
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+  input[type='text']{
+    font-size: 25px;
+    margin: 10px;
+  }
+  .repo-radio{
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+  }
+  .repo-opt{
+    font-size: 13px;
+    margin: 10px auto;
+  }
+  .upload{
+    padding: 4px;
+    font-size: 25px;
+    cursor: pointer;
+    color: white;
+    background-color: $softpurple;
+    border: none;
+    &:hover{
+      background-color: lighten($softpurple, 10%);
+    }
+  }
+  .times{
+    color: $softpink;
+    background-color: transparent;
+    border:none;
+    cursor: pointer;
+    &:hover{
+      color: darken($softpink,10%);
+    }
+  }
+  .check{
+    color: $softgreen;
+    background-color: transparent;
+    border:none;
+    cursor: pointer;
+    &:hover{
+      color: darken($softgreen,10%);
+    }
+  }
+  .repo-okcancl{
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+}
+
+.delete-repo{
+  position: absolute;
+  left: 2px;
+  top: 3px;
+  color: $softorange !important;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////       End User Settings     /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////       User Repositories   /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+.active-project{
+  background-color: $softpurple;
+  width: 200px;
+  height: 150px;
+  margin: 4px auto;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0px 5px;
+  color: white;
+  font-size: $medium;
+  .project-name{
+    margin: auto;
+    cursor: default;
+  }
+  .project-buttons{
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    a{
+      text-decoration: none;
+      &:hover{
+        border-left: 1px solid $softpink;
+      }
+    }
+    .edit{
+      color: $liteblue;
+    }
+    .download{
+      color: $litegreen;
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////     End User Repositories   /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////     BCF VIEWER      //////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+#header{
+  display: flex;
+  flex-direction: column;
+  .panel{
+    display: flex;
+    justify-content: space-around;
+    select{
+      width: 50%;
+    }
+    #update{
+      font-size: $medium;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out 0s;
+      &:hover{
+        transform: rotate(360deg);
+        transition: all 0.3s ease-in-out 0s;
+      }
+    }
+  }
+}
+
+.bcf-block{
+  display: inline-flex;
+  width: 450px;
+  height: 200px;
+  vertical-align: middle;
+  flex-direction: column;
+  margin: 4px auto;
+  border: 2px solid $softpurple;
+  background-color: rgba(255, 255, 255, 0.65);
+  .bcf-title{
+    display: flex;
+    justify-content: space-between;
+    background-color: $softpurple;
+    font-size: $medium;
+    padding: 2px;
+    .editIncidence{
+      cursor: pointer;
+      color: white;
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+  .bcf-container{
+    padding: 4px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    .bcf-left{
+      display: flex;
+      flex-wrap: wrap;
+      width: 60%;
+    }
+    .bcf-right{
+      width: 40%;
+      img{
+        width: 98%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+//BCF Modal
+.modal-container{
+  position: fixed;
+  top: -100%;
+  left: 20%;
+  width: 60%;
+  height: 80%;
+  background-color: white;
+  border-radius: 10px;
+  border: 2px solid black;
+  font-family: 'Roboto', sans-serif;
+  transition: 1s;
+  .modal-close{
+    float: right;
+    cursor: pointer;
+    margin: 2px;
+    color: $softblue;
+  }
+  .modal-buttons{
+    margin: 5px;
+    float: left;
+    .addcomment{
+      cursor: pointer;
+      color: $softgreen;
+      padding: 3px;
+      &:hover{
+        color: #00d131;
+      }
+    }
+    .savecomment{
+      cursor: pointer;
+      color: $softpink;
+      padding: 3px;
+      &:hover{
+        color: #d35931;
+      }
+    }
+  }
+  .modal-comments{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 85%;
+    border-bottom: 2px solid $softpurple;
+    overflow-y: scroll;
+    .modal-comment{
+      display: flex;
+      margin: 5px;
+      flex-direction: column;
+      border: 1px solid gray;
+      .modal-title{
+        padding: 3px;
+        background-color: $softpurple;
+        color:white;
+      }
+      .modal-text{
+        background-color: white;
+        color:black;
+        padding: 5px;
+      }
+      .modal-text-editable{
+        font-family: 'Roboto';
+        max-width: 100%;
+        height: 100px;
+        border: none;
+        border-bottom: 1px solid black;
+        resize: none;
+      }
+      .times-comment{
+        margin: 1px;
+        color: $softpink;
+        cursor: pointer;
+        &:hover{
+          color: #d33931;
+        }
+      }
+      .check-comment{
+        margin: 1px;
+        color: $softgreen;
+        cursor: pointer;
+        &:hover{
+          color: #00d131;
+        }
+      }
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////     END BCF VIEWER   /////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////      Buttons & Checkboxes   /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  END Buttons & Checkboxes   /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+//Footer
+footer{
+  display: flex;
+  justify-content: space-around;
+  background-color: black;
+  color: $softpurple;
+  height: 50px;
+  align-items: center;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  a:visited{
+    color: $softpurple;
+  }
+}
