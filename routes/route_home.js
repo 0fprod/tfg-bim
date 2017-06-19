@@ -1,15 +1,15 @@
-var express      = require('express'),
-    userprojects = require('./user_projects.js'),
-    userrepo     = require('./user_repo.js'),
-    mongoose     = require('mongoose'),
-    api          = new require('github')({host: 'api.github.com'}),
-    UserConfig   = require('../config/db_model.js'),
-    user_home    = express.Router(),
-    userInfo     = {};
+var express    = require('express'),
+    mongoose   = require('mongoose'),
+    api        = new require('github')({host: 'api.github.com'}),
+    userInfo   = {},
+    UserConfig = require('../config/db_model.js'),
+    rtProjects = require('./route_projects.js'),
+    rtIssues   = require('./route_issues.js'),
+    rtHome     = express.Router();
 
 mongoose.connect('mongodb://admin:admin@ds151070.mlab.com:51070/tfgbim');
-user_home.use('/:username/projects', userprojects);
-user_home.use('/:username/projects/p', userrepo);
+rtHome.use('/:username/projects', rtProjects);
+rtHome.use('/:username/projects/p', rtIssues);
 
 //checkAuth
 var checkAuth = (req, res, next) => {
@@ -31,21 +31,21 @@ var checkAuth = (req, res, next) => {
 }
 
 //Displays active repositories from an user
-user_home.get('/:username', checkAuth, (req, res, next) => {
+rtHome.get('/:username', checkAuth, (req, res, next) => {
 
   UserConfig.find({name: userInfo.name}, function(mongoerr, data){
     if(mongoerr || data.length == 0) res.render('pages/user_home.ejs', {user : userInfo, sync : []});
-    else         res.render('pages/user_home.ejs', {user : userInfo, sync : data[0].repos});
+    else         res.render('pages/view_home.ejs', {user : userInfo, sync : data[0].repos});
   });
 
 });
 
 //Destroys session
-user_home.post('/logout', (req, res, next) => {
+rtHome.post('/logout', (req, res, next) => {
   mongoose.connection.close();
   req.session.destroy();
   res.sendStatus(200);
 });
 
 
-module.exports = user_home;
+module.exports = rtHome;

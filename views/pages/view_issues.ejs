@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <% include ../partials/head %>
+  <script src="/js/sidemenu.js" charset="utf-8"></script>
+  <script src="/js/user_issues.js" charset="utf-8"></script>
+  <body>
+    <%- include('../partials/sidemenu', {user : user}) %>
+
+    <div class="content">
+      <div id="header">
+        <div class="page-title">
+            <%= title %>
+        </div>
+        <div class="panel">
+          <select class="" name="commits">
+            <% for(i = 0; i < commits.length; i++){ %>
+              <option class="options" sha="<%= commits[i].sha %>" btree="<%= commits[i].commit.tree.sha %>" title="<%= commits[i].commit.message %>" value="">
+                <%= commits[i].commit.author.name + ' - ' + parseDate(commits[i].commit.author.date) + ' - ' + commits[i].commit.message %>
+              </option>
+            <% } %>
+          </select>
+          <i id="update" title="Actualizar" class="fa fa-refresh fa-2x"></i>
+        </div>
+      </div>
+      <div class="repo-container">
+
+      </div>
+
+      <div id="button-container">
+        <input id="uploadfile" style="display:none;"type="file"/>
+        <div id="download" title="Descargar proyecto" class="bcf-tool tool-blue">
+          <i class="fa fa-cloud-download fa-2x"></i>
+        </div>
+        <div id="uploadbtn" class="bcf-tool tool-red">
+          <i class="fa fa-cloud-upload fa-2x"></i>
+        </div>
+        <div id="collabs" title="Administrar colaboradores" class="bcf-tool tool-green">
+          <i class="fa fa-user fa-2x"></i>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="overlay"></div>
+    <i id="loading-icon" class="fa fa-spinner fa-pulse fa-4x fa-fw"></i>
+
+    <% include ../partials/footer %>
+    <div class="modal-container">
+
+    </div>
+  </body>
+</html>

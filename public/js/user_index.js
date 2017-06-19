@@ -10,7 +10,12 @@
         useBootstrap: false,
         boxWidth: '30%',
         icon: 'fa fa-times',
-        type: 'red'
+        type: 'red',
+        buttons : {
+          ok : () => {
+            window.location = goHome(window.location);
+          }
+        }
       });
     }
 
@@ -49,11 +54,26 @@
       })
     });
 
+    //Encode to x-www-form-urlencoded
     let encode = (obj) => {
       let str = [];
       for(p in obj)
         str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]))
       return str.join('&');
+    }
+
+    //Removes query & paths from str
+    let goHome = (str) => {
+      let url = str.toString(),
+          index = 0,
+          re = /\//g,
+          c = 0;
+
+      while(c < 3){
+        index = re.exec(url).index;
+        c++;
+      }
+      return url.substring(0, index);
     }
 
   });

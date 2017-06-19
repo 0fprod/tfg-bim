@@ -1,7 +1,10 @@
 (function (){
   $('document').ready( () => {
+    var ifcEncoded;                                                               //Updated when #upload-ifc change
 
-    $('.project').on('click', (evt) => {
+    //Toggle sync class on the clicked project
+    $(document).on('click', '.project', (evt) => {
+      console.log('clicked');
       let self = evt.target;
       if($(self).find('.synced').length > 0){
         $(self).find('div').removeClass('sync');
@@ -13,10 +16,9 @@
     });
 
     //Delete project
-    $('.delete-repo').on('click', (evt) =>{
+    $(document).on('click', '.delete-repo', (evt) =>{
         let self = evt.target;
         let project = {owner: $(self).siblings().attr('owner'), repo: $(self).siblings().attr('name')};
-
         $.confirm({
             title:'Cuidado!',
             content:'Esta acción no se puede deshacer.\n¿Estás seguro que quieres eliminar este proyecto?',
@@ -25,7 +27,7 @@
             type: 'orange',
             boxWidth: '30%',
             buttons:{
-              eliminar: () =>{
+              eliminar: () => {
                 $('.overlay').css('display','block');
                 $('#loading-icon').css('display','block');
                 $.ajax({
@@ -42,9 +44,12 @@
                             content:'Proyecto eliminado!',
                             boxWidth:'30%'
                            });
-                    $(self).parent().remove();
+                   $(self).parent().remove();
+                   $('#save-projects').click();
                   },
                   error: (err) => {
+                    $('.overlay').css('display','none');
+                    $('#loading-icon').css('display','none');
                     if(err.status == 403){
                       $.notify("Debes tener derechos de administrador para eliminar este proyecto", "warn");
                     } else {
@@ -66,8 +71,8 @@
         });
     });
 
-    //Save active projects
-    $('#savebtn').on('click', (evt) => {
+    //Save projects
+    $('#save-projects').on('click', (evt) => {
       var list = $.map($(".sync"), (item) => {return {"owner" : $(item).attr('owner'), "name" : $(item).attr('name')}});
       //Display syncing icon spinner next to this.
       let syncin = $(document.createElement('i')).attr('id','refresh').addClass('fa fa-refresh fa-spin fa-3x fa-fw');
@@ -88,50 +93,88 @@
       });
     });
 
-    $('#createbtn').on('click', (evt) => {
-      createProject();
+    //Displays .modal-container to add a new project
+    $('#add-project').on('click', (evt) => {
+      $('.modal-container').delay(500).css('top','40%');
+      $('input[type="text"]').val('');
+      $('#upload-ifc').val('');
     });
 
-    $(document).on('click', '#push', (evt) => {
+    //Dismisses .modal-container
+    $('#cancel').on('click', (evt) => {
+      $('.modal-container').delay(500).css('top','-100%');
+    })
+
+    //Creates the project at github
+    $('#push').on('click', (evt) => {
       $('.overlay').css('display','block');
       $('#loading-icon').css('display','block');
-      newrepo.title = parseProjectName($('input[type=text]').val().trim());
-      newrepo.filename = parseFileName($('input[type=file]').val().trim());
-      newrepo.visibility = $('input[type=radio]:checked').val()
+      let project = {
+        name: parseProjectName($('input[type=text]').val().trim()),
+        path: parseFileName($('#upload-ifc').val().trim()),
+        type: $('input[type=radio]:checked').val(),
+        content: ifcEncoded
+      };
 
       $.ajax({
-        type: 'POST',
-        data: JSON.stringify({"data" : newrepo}),
-        title: newrepo.title,
+        type:'POST',
+        data: JSON.stringify({"data" : project}),
         contentType: 'application/json',
         url: window.location + "/create",
-        success: (data) => {
-          $.notify("Proyecto creado", "sucess");
+        success: (res) => {
+          //console.log(res);
           $('.overlay').css('display','none');
           $('#loading-icon').css('display','none');
-          //Append project to list
-          let project = $(document.createElement('div')).addClass('project'),
-              name    = $(document.createElement('div')).attr('owner', $('#username').text().trim()).attr('name', data),
-              times   = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
-
-          $(name).text(data);
-          $(project).append(name, times);
-          $($('.repo-container')[0]).append(project);
+          addProjectComponent($('#username').text().trim(), project.name);
+          $('#cancel').click();
         },
         error: (err) => {
-          console.log(err);
-          if(newrepo.visibility === 'private'){
-            $.notify("Los proyectos privados requieren un plan de pagos https://github.com/account/upgrade", "error");
+          //console.log(err);
+          $('.overlay').css('display','none');
+          $('#loading-icon').css('display','none');
+          if(err.responseJSON.code === 422){ //Upgrade ghAccount
+            let link = '<a href="https://github.com/pricing"> GitHub</a>';
+            $.alert({
+              title:'Error!',
+              content:'No se ha podido crear el repositorio. Para repositorios privados debe mejorar su cuenta en ' + link + '.',
+              useBootstrap: false,
+              boxWidth: '30%',
+              type:'red'
+            });
           } else {
-            $.notify("No se ha podido crear el proyecto", "error");
+            $.alert({
+              title:'Error!',
+              content:'No se ha podido crear el repositorio.',
+              useBootstrap: false,
+              boxWidth: '30%',
+              type:'red'
+            });
           }
-
         }
       });
+    })
 
-      $('#cancel').click();
+    //Encodes the file to b64
+    $('#upload-ifc').on('change', (evt) => {
+      let file       = evt.target.files[0],
+          filereader = new FileReader();
+      filereader.onloadstart = () =>{ $('#loading-icon').css('display','block');}
+      filereader.onload = () => {
+        if(file.name.includes('.ifc'))  ifcEncoded = btoa(this.result);             //Encode to b64
+        else                            $.alert('Error, Archivo desconocido.');
+        $('#loading-icon').css('display','none');
+      }
+      filereader.readAsText(file);
     });
 
-  }); //End of ready
+    //Append .project div to .repo-container
+    var addProjectComponent = (projectOwner, projectName) => {
+      let box   = $(document.createElement('div')).addClass('project'),
+          text  = $(document.createElement('div')).attr({owner: projectOwner, name: projectName}).text(projectName),
+          close = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
+      $(box).append(text, close);
+      $('.repo-container').append(box);
+    }
 
+  }); //End of docReady
 }).call(this);

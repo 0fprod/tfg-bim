@@ -18,33 +18,44 @@
                 <div class="sync" owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
                   <%= sync[i].name %> <i class="fa fa-check-circle synced"></i>
                 </div>
-                <i class="fa fa-times-circle fa-2x delete-repo"></i>
               <% } else { %>
                 <div owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
                   <%= sync[i].name %>
                 </div>
-                <i class="fa fa-times-circle fa-2x delete-repo"></i>
               <% } %>
+              <i class="fa fa-times-circle fa-2x delete-repo"></i>
           </div>
         <% } %>
       </div>
       <div id="button-container">
-
-        <span id="createbtn" class="fa-stack fa-lg btn create" title="Crear proyecto">
-          <i class="fa fa-circle fa-stack-2x"></i>
-          <i class="fa fa-plus fa-stack-1x fa-inverse"></i>
-        </span>
-
-        <span id="savebtn" class="fa-stack fa-lg btn save" title="Guardar proyectos activos">
-          <i class="fa fa-circle fa-stack-2x"></i>
-          <i class="fa fa-save fa-stack-1x fa-inverse"></i>
-        </span>
+        <div id="add-project" class="bcf-tool tool-green" title="Crear proyecto">
+          <i class="fa fa-plus fa-2x"></i>
+        </div>
+        <div id="save-projects" class="bcf-tool tool-blue" title="Guardar proyectos activos">
+          <i class="fa fa-save fa-2x"></i>
+        </div>
 
       </div>
     </div>
 
     <div class="modal-container">
-
+      <div class="top">
+        <input type="text" placeholder="Titulo"/>
+      </div>
+      <div class="mid">
+        <div class="mid-left">
+          <span><input type="radio" name="visibility" value="public"><span>Público</span></span>
+          <span><input type="radio" name="visibility" value="private"><span>Privado</span></span>
+        </div>
+        <div class="mid-right">
+          <input type="file" id="upload-ifc" style="display:none;">
+          <label for="upload-ifc" class="upload">Examinar ...</label>
+        </div>
+      </div>
+      <div class="bot">
+        <button id="push" class="check"><i class="fa fa-check-circle fa-4x"></i></button>
+        <button id="cancel" class="times"><i class="fa fa-times-circle fa-4x"></i></button>
+      </div>
     </div>
 
     <div class="overlay"></div>

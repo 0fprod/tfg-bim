@@ -2,11 +2,11 @@ var express    = require('express'),
     api        = new require('github')({host: 'api.github.com'}),
     bodyparser = require('body-parser'),
     session    = require('express-session'),
-    user_home  = require('./user_home.js'),
-    index = express.Router();
+    rtHome     = require('./route_home.js'),
+    rtIndex    = express.Router();
 
-index.use(bodyparser.urlencoded({limit:'70mb', extended:true}));
-index.use(session({
+rtIndex.use(bodyparser.urlencoded({limit:'70mb', extended:true}));
+rtIndex.use(session({
                     name: 'sessionID',
                     secret:'secrettfg',
                     resave: false,
@@ -15,13 +15,13 @@ index.use(session({
                             maxAge: 18000000
                     }
                   }));
-index.use('/u', user_home);
+rtIndex.use('/u', rtHome);
 
-index.get('/', function(req, res, next){
-  res.render('pages/index.ejs', {});
+rtIndex.get('/', function(req, res, next){
+  res.render('pages/view_index.ejs', {});
 });
 
-index.post('/login', function (req, res, next){
+rtIndex.post('/login', function (req, res, next){
   api.authenticate({ type: "basic", username: req.body.username, password: req.body.password});
   api.users.get({}, (err, json) => {
     if(err){
@@ -34,4 +34,4 @@ index.post('/login', function (req, res, next){
   });
 });
 
-module.exports = index;
+module.exports = rtIndex;

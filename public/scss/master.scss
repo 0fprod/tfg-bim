@@ -6,6 +6,9 @@ $softpink: #D9A790;
 $litegreen: #29ff5b;
 $liteblue: #3dfcff;
 $softorange : #F79646;
+$darkred: #C0504D;
+$darkblue: #4F81BD;
+$darkgreen: #9BBB59;
 
 //Fonts
 @import url('https://fonts.googleapis.com/css?family=Roboto');
@@ -203,7 +206,7 @@ body {
   display: flex;
   overflow-y: scroll;
   flex-wrap: wrap;
-  max-height: 450px;
+  height: 420px;
 }
 
 .page-title{
@@ -238,81 +241,42 @@ body {
 #button-container{
   display: flex;
   justify-content: flex-start;
-  .btn{
-    color: white;
-    font-size: $big;
-    cursor: pointer;
-  }
-  .save{
-    color: $softblue;
-    transition: 0.5s;
-    &:hover{
-      color: darken($softblue, 30);
-      transition: 0.5s;
-    }
-  }
-  .create{
-    color: $softgreen;
-    transition: 0.5s;
-    &:hover{
-      color: darken($softgreen, 30);
-      transition: 0.5s;
-    }
+  margin-top: 10px;
+}
+
+
+
+.upload{
+  padding: 3px;
+  font-size: 18px;
+  cursor: pointer;
+  color: white;
+  background-color: $softpurple;
+  border: none;
+  &:hover{
+    background-color: lighten($softpurple, 10%);
   }
 }
 
-.create-repo{
-  margin: 20px;
-  display: flex;
-  flex-direction: column;
-  input[type='text']{
-    font-size: 25px;
-    margin: 10px;
-  }
-  .repo-radio{
-    display: flex;
-    justify-content: center;
-    margin: 10px;
-  }
-  .repo-opt{
-    font-size: 13px;
-    margin: 10px auto;
-  }
-  .upload{
-    padding: 4px;
-    font-size: 25px;
-    cursor: pointer;
-    color: white;
-    background-color: $softpurple;
-    border: none;
-    &:hover{
-      background-color: lighten($softpurple, 10%);
-    }
-  }
-  .times{
-    color: $softpink;
-    background-color: transparent;
-    border:none;
-    cursor: pointer;
-    &:hover{
-      color: darken($softpink,10%);
-    }
-  }
-  .check{
-    color: $softgreen;
-    background-color: transparent;
-    border:none;
-    cursor: pointer;
-    &:hover{
-      color: darken($softgreen,10%);
-    }
-  }
-  .repo-okcancl{
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
+.times{
+  color: $softpink;
+  background-color: transparent;
+  border:none;
+  cursor: pointer;
+  &:hover{
+    color: darken($softpink,10%);
   }
 }
+.check{
+  color: $softgreen;
+  background-color: transparent;
+  border:none;
+  cursor: pointer;
+  &:hover{
+    color: darken($softgreen,10%);
+  }
+}
+
 
 .delete-repo{
   position: absolute;
@@ -326,7 +290,7 @@ body {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////       User Repositories   /////////////////////////////
+/////////////////////////////       User Projects         /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
 .active-project{
@@ -339,26 +303,62 @@ body {
   padding: 0px 5px;
   color: white;
   font-size: $medium;
+  flex-direction: column;
   .project-name{
     margin: auto;
+    text-align: center;
     cursor: default;
   }
   .project-buttons{
-    display: flex;
-    flex-direction: column;
     margin: auto;
+    display: flex;
     a{
       text-decoration: none;
-      &:hover{
-        border-left: 1px solid $softpink;
-      }
+      color: white;
     }
-    .edit{
-      color: $liteblue;
+  }
+}
+
+.modal-container{
+  display: flex;
+  position: fixed;
+  top: -100%;
+  left: 33%;
+  background-color: white;
+  width: 30%;
+  flex-direction: column;
+  padding: 15px;
+  border-radius: 30px;
+  transition: 1s;
+  border: 2px solid black;
+  .top{
+    display: flex;
+    justify-content: center;
+    input{
+      font-size: 17px;
+      width: 100%;
+      font-weight: bold;
     }
-    .download{
-      color: $litegreen;
+  }
+  .mid{
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    .mid-left{
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
     }
+    .mid-right{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+  .bot{
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
   }
 }
 
@@ -380,7 +380,6 @@ body {
       width: 50%;
     }
     #update{
-      font-size: $medium;
       cursor: pointer;
       transition: all 0.3s ease-in-out 0s;
       &:hover{
@@ -391,138 +390,88 @@ body {
   }
 }
 
-.bcf-block{
-  display: inline-flex;
-  width: 450px;
-  height: 200px;
-  vertical-align: middle;
-  flex-direction: column;
-  margin: 4px auto;
-  border: 2px solid $softpurple;
-  background-color: rgba(255, 255, 255, 0.65);
-  .bcf-title{
-    display: flex;
-    justify-content: space-between;
-    background-color: $softpurple;
-    font-size: $medium;
-    padding: 2px;
-    .editIncidence{
-      cursor: pointer;
-      color: white;
-      &:hover{
-        text-decoration: underline;
-      }
-    }
-  }
-  .bcf-container{
-    padding: 4px;
-    display: flex;
-    flex-direction: row;
+.issue-block {
+  position: relative;
+  height: 250px;
+  width: 250px;
+  margin: 10% 2%;
+  cursor: pointer;
+  .issue-prev{
     width: 100%;
     height: 100%;
-    .bcf-left{
-      display: flex;
-      flex-wrap: wrap;
-      width: 60%;
+  }
+  .issue-desc {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba($darkblue, 0.80);
+    color: white;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .2s, visibility .2s;
+    list-style-type: none;
+    .issue-item{
+      text-align:left;
+      margin-left: -15px;
     }
-    .bcf-right{
-      width: 40%;
-      img{
-        width: 98%;
-        height: 100%;
-      }
+    .issue-status{
+      display:block;
+      position:absolute;
+      bottom: 10px;
+      text-align:center;
+      font-size: 20px;
+      border-top: 2px solid $darkred;
+      border-bottom: 2px solid $darkred;
     }
+  }
+  &:hover .issue-desc {
+    visibility: visible;
+    opacity: 1;
+  }
+  .issue-title{
+    text-align: center;
+    color: white;
+    background-color: $softpurple;
+    height: 60px;
+    margin-top: -5px;
+    padding: 5px;
   }
 }
 
-//BCF Modal
-.modal-container{
-  position: fixed;
-  top: -100%;
-  left: 20%;
-  width: 60%;
-  height: 80%;
-  background-color: white;
-  border-radius: 10px;
-  border: 2px solid black;
-  font-family: 'Roboto', sans-serif;
-  transition: 1s;
-  .modal-close{
-    float: right;
-    cursor: pointer;
-    margin: 2px;
-    color: $softblue;
-  }
-  .modal-buttons{
-    margin: 5px;
-    float: left;
-    .addcomment{
-      cursor: pointer;
-      color: $softgreen;
-      padding: 3px;
-      &:hover{
-        color: #00d131;
-      }
-    }
-    .savecomment{
-      cursor: pointer;
-      color: $softpink;
-      padding: 3px;
-      &:hover{
-        color: #d35931;
-      }
-    }
-  }
-  .modal-comments{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 85%;
-    border-bottom: 2px solid $softpurple;
-    overflow-y: scroll;
-    .modal-comment{
-      display: flex;
-      margin: 5px;
-      flex-direction: column;
-      border: 1px solid gray;
-      .modal-title{
-        padding: 3px;
-        background-color: $softpurple;
-        color:white;
-      }
-      .modal-text{
-        background-color: white;
-        color:black;
-        padding: 5px;
-      }
-      .modal-text-editable{
-        font-family: 'Roboto';
-        max-width: 100%;
-        height: 100px;
-        border: none;
-        border-bottom: 1px solid black;
-        resize: none;
-      }
-      .times-comment{
-        margin: 1px;
-        color: $softpink;
-        cursor: pointer;
-        &:hover{
-          color: #d33931;
-        }
-      }
-      .check-comment{
-        margin: 1px;
-        color: $softgreen;
-        cursor: pointer;
-        &:hover{
-          color: #00d131;
-        }
-      }
-    }
+
+.bcf-tool{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor: pointer;
+  color: white;
+}
+
+.tool-red{
+  background-color: $softpink;
+  &:hover{
+    background-color: $darkred;
   }
 }
 
+.tool-blue{
+  background-color: $softblue;
+  &:hover{
+    background-color: $darkblue;
+  }
+}
+
+.tool-green{
+  background-color: $softgreen;
+  &:hover{
+    background-color: $darkgreen;
+  }
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////     END BCF VIEWER   /////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////

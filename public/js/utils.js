@@ -1,18 +1,12 @@
 //Globals
 var bcfList = [];
 var newrepo = {};
+var file;
 
-//Array that appends a parsed xml file to the html body
-var BcfXML = function() {};
-BcfXML.prototype = [];
-BcfXML.prototype.push = function(item) {
-  $('.repo-container').append(xmlParser(item, this.length));
-  Array.prototype.push.call(this, item);
-};
-
-/*Parses date format YYYY-MM-DDTHH:MM:SSZ
-  to DD-MM-YY
-*/
+///////////////////
+//////  TextFormat
+///////////////////
+//StringDate format YYYY-MM-DDTHH:MM:SSZ to DD-MM-YY
 var parseDate = function (str){
   if(str.includes('/'))
     return str;
@@ -20,44 +14,47 @@ var parseDate = function (str){
   var date = d.split('-');
   return date[2] + '/' + date[1] + '/' + date[0];
 }
+//String to lowercase, convert spaces to dashes
+var parseFileName = (name) => {
+  return name.substr(name.lastIndexOf('\\') + 1).replace(/[_\s]+/g, '-').toLowerCase();
+}
+//String to lowercase, convert spaces to dashes
+var parseProjectName = (name) => {
+  return name.replace(/[_\s]+/g, '-').toLowerCase();
+}
 
-function xmlParser(xml, index){
-  var x2js    = new X2JS(),
-      jsonbcf = x2js.xml_str2json(xml.content);
-
-  //BCF title & status
-  var title     = $(document.createElement('div')),
-      sp_title  = $(document.createElement('span')).html(jsonbcf.Markup.Topic.Title),
-      sp_status = $(document.createElement('span')).html(jsonbcf.Markup.Topic._TopicStatus),
-      sp_edit   = $(document.createElement('i')).addClass('fa fa-pencil editIncidence').attr('index', index);
-  $(title).append(sp_title, sp_status, sp_edit).toggleClass('bcf-title');
+//Array that appends a parsed xml file to the html body
+var BcfXML = () => {};
+BcfXML.prototype = [];
+BcfXML.prototype.push = (item) => {
+  $('.repo-container').append(xmlParser(item, this.length));
+  Array.prototype.push.call(this, item);
+};
 
 
-  //left_container
-  var left_container = $(document.createElement('div')),
-      author         = $(document.createElement('span')).html('Autor: ' + jsonbcf.Markup.Topic.CreationAuthor),
-      date           = $(document.createElement('span')).html('Fecha: ' + parseDate(jsonbcf.Markup.Topic.CreationDate)),
-      priority       = $(document.createElement('span')).html('Prioridad: ' + jsonbcf.Markup.Topic.Priority),
-      modifauthor    = $(document.createElement('span')).html('Modificado por: ' + jsonbcf.Markup.Topic.ModifiedAuthor),
-      modifdate      = $(document.createElement('span')).html('Modificado el: ' + parseDate(jsonbcf.Markup.Topic.ModifiedDate)),
-      assigned       = $(document.createElement('span')).html('Asignado a: ' + jsonbcf.Markup.Topic.AssignedTo);
-  $(left_container).append(author, date, priority, modifauthor, modifdate, assigned).toggleClass('bcf-left');
+///////////////////
+//////  Components
+///////////////////
 
-  //right_container
-  var right_container = $(document.createElement('div')),
-      img             = $(document.createElement('img'));
-  $(img).attr('src','data:image/png;base64,' + xml.preview);
-  $(right_container).append(img).toggleClass('bcf-right')
+var xmlParser = (xml, index) => {
+  let x2js        = new X2JS(),
+      jsonbcf     = x2js.xml_str2json(xml.content),
+      issue_block = $(document.createElement('div')).addClass('issue-block'),
+      issue_prev  = $(document.createElement('img')).addClass('issue-prev').attr('src', 'data:image/png;base64,' + xml.preview),
+      issue_desc  = $(document.createElement('ol')).addClass('issue-desc'),
+      author      = $(document.createElement('li')).addClass('issue-item').text('Autor: ' + jsonbcf.Markup.Topic.CreationAuthor),
+      date        = $(document.createElement('li')).addClass('issue-item').text('Fecha: ' + parseDate(jsonbcf.Markup.Topic.CreationDate)),
+      assign      = $(document.createElement('li')).addClass('issue-item').text('Asignado a: ' + jsonbcf.Markup.Topic.AssignedTo),
+      modifd      = $(document.createElement('li')).addClass('issue-item').text('Ult. Modif.: ' + parseDate(jsonbcf.Markup.Topic.ModifiedDate)),
+      modifby     = $(document.createElement('li')).addClass('issue-item').text('Modif. por: ' + jsonbcf.Markup.Topic.ModifiedAuthor),
+      status      = $(document.createElement('li')).addClass('issue-status').text(jsonbcf.Markup.Topic._TopicStatus),
+      title       = $(document.createElement('div')).addClass('issue-title').text(jsonbcf.Markup.Topic.Title);
 
-  //container
-  var container = $(document.createElement('div'));
-  $(container).append(left_container, right_container).toggleClass('bcf-container');
+  $(issue_desc).append(author, date, assign, modifd, modifby, status);
+  $(issue_block).append(issue_prev, issue_desc, title);
 
-  //Create BCFBlock
-  var bcfblock = $(document.createElement('div'));
-  $(bcfblock).append(title, container).toggleClass('bcf-block');
-
-  bcfList.push({owner: window.location.href.split('=')[1],
+  bcfList.push({
+                 owner: window.location.href.split('=')[1],
                  repo : $('.page-title').text().trim(),
                  path: 'markup.bcf',
                  message: '',
@@ -65,18 +62,18 @@ function xmlParser(xml, index){
                  sha: xml.sha
                });
 
-  return bcfblock;
+  return issue_block;
 }
 
-function createModal(incidence){
-  var jsonbcf           = incidence.content.Markup,
+//Create a modal component to add comments for issues
+var createModal = (issue) => {
+  let jsonbcf           = issue.content.Markup,
       close             = $(document.createElement('i')).addClass('fa fa-close modal-close').attr('title','Cerrar'),
       savecomment       = $(document.createElement('i')).addClass('fa fa-save fa-3x savecomment').attr('title', 'Guardar comentarios'),
       addcomment        = $(document.createElement('i')).addClass('fa fa-plus-square fa-3x addcomment').attr('title', 'Añadir comentario'),
       comment_container = $(document.createElement('div')).addClass('modal-comments'),
-      buttons           = $(document.createElement('div')).addClass('modal-buttons');
-
-  var comments = (jsonbcf.Comment.constructor === Array) ? jsonbcf.Comment : [jsonbcf.Comment];
+      buttons           = $(document.createElement('div')).addClass('modal-buttons'),
+      comments          = (jsonbcf.Comment.constructor === Array) ? jsonbcf.Comment : [jsonbcf.Comment];
 
   //Create comments
   comments.forEach(function(comment){
@@ -117,7 +114,8 @@ function createModal(incidence){
   });
 }
 
-function createComment(comment){
+//Appends a comment to createModal
+var createComment = (comment) => {
   if(comment){
     return $(document.createElement('div')).addClass('modal-comment').append(
             $(document.createElement('div')).addClass('modal-title').text(parseDate(comment.Date) + ', ' + comment.Author),
@@ -146,72 +144,4 @@ function createComment(comment){
 
     return textbox;
   }
-}
-
-function createProject(){
-  //HtmlElements
-  let title = $(document.createElement('input')).attr({type:'text', placeholder:'Titulo'}),
-      pri   = $(document.createElement('input')).attr({type:'radio', name:'vis', value:'private'}),
-      prtxt = $(document.createElement('span')).text('Privado'),
-      pub   = $(document.createElement('input')).attr({type:'radio', name:'vis', value:'public', checked:'checked'}),
-      putxt = $(document.createElement('span')).text('Público'),
-      ifc   = $(document.createElement('label')).text(' IFC').attr('for','upload').toggleClass('upload'),
-      ok    = $(document.createElement('button')).attr('id','push').toggleClass('check'),
-      cancl = $(document.createElement('button')).attr('id','cancel').toggleClass('times'),
-      ifcup = $(document.createElement('input')).attr('type','file').attr('id','upload').css('display','none');
-
-  //Icons
-  let upload = $(document.createElement('i')).toggleClass('fa fa-upload'),
-      times  = $(document.createElement('i')).toggleClass('fa fa-times-circle fa-4x'),
-      check  = $(document.createElement('i')).toggleClass('fa fa-check-circle fa-4x');
-
-  //Containers
-  let radios   = $(document.createElement('div')).toggleClass('repo-radio'),
-      optional = $(document.createElement('div')).toggleClass('repo-opt'),
-      buttons  = $(document.createElement('div')).toggleClass('repo-okcancl'),
-      pack     = $(document.createElement('div')).toggleClass('create-repo'),
-      container = $('.modal-container')[0];
-
-
-  $(ifc).prepend(upload);
-  $(ok).append(check);
-  $(cancl).append(times);
-  $(radios).append(pub, putxt, pri, prtxt);
-  $(optional).append(ifc);
-  $(buttons).append(cancl, ok);
-  $(pack).append(title, radios, ifcup, optional, buttons);
-  $(container).append(pack);
-  $(container).delay(500).css('top', '25%').css('height','40%');
-
-  //Events
-  $(ifcup).on('change', (evt) => {
-    let fr = new FileReader();
-
-    fr.onloadstart = () =>{
-      $('#loading-icon').css('display','block');
-    }
-
-    fr.onload = () => {
-      newrepo.content = btoa(fr.result);
-      $('#loading-icon').css('display','none');
-    }
-
-    fr.readAsText(evt.currentTarget.files[0]);
-
-  });
-
-  $(cancl).on('click', (evt) => {
-    //Close modal
-    $(container).delay(500).css('top', '-100%');
-    $(container).empty();
-    newrepo = {};
-  });
-
-}
-
-var parseFileName = (name) => {
-  return name.substr(name.lastIndexOf('\\') + 1).replace(/[_\s]+/g, '-').toLowerCase();
-}
-var parseProjectName = (name) => {
-  return name.replace(/[_\s]+/g, '-').toLowerCase();
 }
