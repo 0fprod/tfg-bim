@@ -15,12 +15,21 @@ rtIndex.use(session({
                             maxAge: 18000000
                     }
                   }));
-rtIndex.use('/u', rtHome);
+
+var checkSession = (req, res, next) => {
+  if(req.session.username && req.session.password)
+    next();
+  else
+    res.redirect('/?badLogin=true');
+}
+
+rtIndex.use('/u', checkSession, rtHome);
 
 rtIndex.get('/', function(req, res, next){
   res.render('pages/view_index.ejs', {});
 });
 
+//Creates session
 rtIndex.post('/login', function (req, res, next){
   api.authenticate({ type: "basic", username: req.body.username, password: req.body.password});
   api.users.get({}, (err, json) => {
@@ -29,6 +38,7 @@ rtIndex.post('/login', function (req, res, next){
     } else {
       req.session.username = req.body.username;
       req.session.password = req.body.password;
+      req.session.userInfo = {name : json.data.login, avatar : json.data.avatar_url, email : json.data.email};
       res.sendStatus(200);
     }
   });

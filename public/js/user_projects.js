@@ -1,10 +1,9 @@
 (function (){
   $('document').ready( () => {
-    var ifcEncoded;                                                               //Updated when #upload-ifc change
+    var ifcEncoded;  //Updated when #upload-ifc change
 
     //Toggle sync class on the clicked project
     $(document).on('click', '.project', (evt) => {
-      console.log('clicked');
       let self = evt.target;
       if($(self).find('.synced').length > 0){
         $(self).find('div').removeClass('sync');
@@ -107,52 +106,64 @@
 
     //Creates the project at github
     $('#push').on('click', (evt) => {
-      $('.overlay').css('display','block');
-      $('#loading-icon').css('display','block');
-      let project = {
-        name: parseProjectName($('input[type=text]').val().trim()),
-        path: parseFileName($('#upload-ifc').val().trim()),
-        type: $('input[type=radio]:checked').val(),
-        content: ifcEncoded
-      };
+      if($('input[type=text]').val() == ''){
+        $.alert({
+          title: 'Error',
+          content: 'Debe subir un fichero .ifc para poder crear el proyecto.',
+          useBootstrap: false,
+          boxWidth: '30%',
+          type:'red',
+          icon: 'fa fa-warning'
+        });
+      } else {
+        $('.overlay').css('display','block');
+        $('#loading-icon').css('display','block');
+        let project = {
+          name: parseProjectName($('input[type=text]').val().trim()),
+          path: parseFileName($('#upload-ifc').val().trim()),
+          type: $('input[type=radio]:checked').val(),
+          content: ifcEncoded
+        };
 
-      $.ajax({
-        type:'POST',
-        data: JSON.stringify({"data" : project}),
-        contentType: 'application/json',
-        url: window.location + "/create",
-        success: (res) => {
-          //console.log(res);
-          $('.overlay').css('display','none');
-          $('#loading-icon').css('display','none');
-          addProjectComponent($('#username').text().trim(), project.name);
-          $('#cancel').click();
-        },
-        error: (err) => {
-          //console.log(err);
-          $('.overlay').css('display','none');
-          $('#loading-icon').css('display','none');
-          if(err.responseJSON.code === 422){ //Upgrade ghAccount
-            let link = '<a href="https://github.com/pricing"> GitHub</a>';
-            $.alert({
-              title:'Error!',
-              content:'No se ha podido crear el repositorio. Para repositorios privados debe mejorar su cuenta en ' + link + '.',
-              useBootstrap: false,
-              boxWidth: '30%',
-              type:'red'
-            });
-          } else {
-            $.alert({
-              title:'Error!',
-              content:'No se ha podido crear el repositorio.',
-              useBootstrap: false,
-              boxWidth: '30%',
-              type:'red'
-            });
+        $.ajax({
+          type:'POST',
+          data: JSON.stringify({"data" : project}),
+          contentType: 'application/json',
+          url: window.location + "/create",
+          success: (res) => {
+            //console.log(res);
+            $('.overlay').css('display','none');
+            $('#loading-icon').css('display','none');
+            addProjectComponent($('#username').text().trim(), project.name);
+            $('#cancel').click();
+          },
+          error: (err) => {
+            //console.log(err);
+            $('.overlay').css('display','none');
+            $('#loading-icon').css('display','none');
+            if(err.responseJSON.code === 422){ //Upgrade ghAccount
+              let link = '<a href="https://github.com/pricing"> GitHub</a>';
+              $.alert({
+                title:'Error!',
+                content:'No se ha podido crear el repositorio. Para repositorios privados debe mejorar su cuenta en ' + link + '.',
+                useBootstrap: false,
+                boxWidth: '30%',
+                type:'red'
+              });
+            } else {
+              $.alert({
+                title:'Error!',
+                content:'No se ha podido crear el repositorio.',
+                useBootstrap: false,
+                boxWidth: '30%',
+                type:'red'
+              });
+            }
           }
-        }
-      });
-    })
+        });
+      }
+
+    });
 
     //Encodes the file to b64
     $('#upload-ifc').on('change', (evt) => {
@@ -160,7 +171,7 @@
           filereader = new FileReader();
       filereader.onloadstart = () =>{ $('#loading-icon').css('display','block');}
       filereader.onload = () => {
-        if(file.name.includes('.ifc'))  ifcEncoded = btoa(this.result);             //Encode to b64
+        if(file.name.includes('.ifc'))  ifcEncoded = btoa(filereader.result);             //Encode to b64
         else                            $.alert('Error, Archivo desconocido.');
         $('#loading-icon').css('display','none');
       }
@@ -174,6 +185,16 @@
           close = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
       $(box).append(text, close);
       $('.repo-container').append(box);
+    }
+
+    //String to lowercase, convert spaces to dashes
+    var parseFileName = (name) => {
+      return name.substr(name.lastIndexOf('\\') + 1).replace(/[_\s]+/g, '-').toLowerCase();
+    }
+
+    //String to lowercase, convert spaces to dashes
+    var parseProjectName = (name) => {
+      return name.replace(/[_\s]+/g, '-').toLowerCase();
     }
 
   }); //End of docReady

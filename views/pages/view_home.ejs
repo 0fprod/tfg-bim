@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
   <% include ../partials/head %>
-  <script src="/js/sidemenu.js" charset="utf-8"></script>
   <body>
-    <%- include('../partials/sidemenu', {user : user}) %>
+    <%- include('../partials/menu', {user : user}) %>
 
       <div class="content">
 
@@ -30,10 +29,10 @@
                 </div>
                 <div class="project-buttons">
                   <div title="Editar" class="bcf-tool tool-blue">
-                    <a href="<%=user.name%>/projects/p/<%=sync[i].name %>?owner=<%= sync[i].owner%>"><i class="fa fa-pencil fa-2x"></i></a>
+                    <a href="<%=user.name%>/projects/p/<%=sync[i].name%>-<%=sync[i].owner%>"><i class="fa fa-pencil fa-2x"></i></a>
                   </div>
                   <div title="Descargar" class="bcf-tool tool-green">
-                    <a href="https://api.github.com/repos/<%=sync[i].owner%>/<%=sync[i].name%>/zipball/master"><i class="fa fa-cloud-download fa-2x"></i></a>
+                    <a href=""><i class="fa fa-cloud-download fa-2x"></i></a>
                   </div>
                 </div>
               </div>

@@ -42,6 +42,8 @@
           window.location += 'u/' + $('#uname').val();
         },
         error: (err) => {
+          $('.overlay').css('display','none');
+          $('#loading-icon').css('display','none');
           $.alert({
             title:'Error!',
             content:'Usuario o contraseña incorrectos',

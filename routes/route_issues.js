@@ -3,86 +3,106 @@ var express    = require('express'),
     bluebird   = require('bluebird'),
     api        = new require('github')({host: 'api.github.com', Promise : bluebird}),
     bodyparser = require('body-parser'),
-    userInfo   = {},
     rtIssues   = express.Router();
 
 rtIssues.use(bodyparser.json({limit:'70mb'}));
 rtIssues.use(bodyparser.urlencoded({limit:'70mb', extended: true}));
 
-//check session
-var checkAuth = (req, res, next) => {
-  if(req.session.username && req.session.password){
-    api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-    api.users.get({}, (err, json) => {
-      if(err){
-        console.log('Errror', err);
-        res.redirect('/?badLogin=true');
-      }
-      else{
-        userInfo = {name : json.data.login, avatar : json.data.avatar_url, email : json.data.email};
-        next();
-      }
-    });
-  } else {
-    res.redirect('/?badLogin=true');
-  }
-}
-
-rtIssues.get('/:projectname', checkAuth, (req, res, next) => {
-
-  api.repos.getCommits({"owner" : req.query.owner, "repo" : req.params.projectname}, (err, json) => {
-    if(err){
-      console.log(err);
-    }
-    else {
-      //console.log(JSON.stringify(json, null));
-      let parseDate = function (str){
-        let date = str.substring(0, str.indexOf('T')).split('-');
-        return date[2] + '/' + date[1] + '/' + date[0];
-      }
-      res.render('pages/view_issues.ejs', {user : userInfo, title : req.params.projectname, commits : json.data, parseDate : parseDate});
-    }
-
+rtIssues.get('/:projectname', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let repo = req.params.projectname.split('-'); //[0] projectname - [1] project owner
+  //TODO what if multiple owners has repo with the same name
+  //TODO if the repository does not exist,somehow delete it from mongoDB
+  api.repos.getCommits({"owner" : repo[1], "repo" : repo[0]}, (err, json) => {
+    if(err)  console.log(err);
+    else
+      res.render('pages/view_issues.ejs', {user : req.session.userInfo, project : repo, commits : json.data});
   });
 });
 
-rtIssues.post('/:projectname', (req, res, next) => {
-  if(req.query.uploadzip === 'true'){
-    let files = req.body.data,
-        repo  = req.params.projectname,
-        owner = req.query.owner,
-        shas = req.body.shas; //Store sha.parentcommit & sha.basetree
+//Download ifc/bcf as zip
+rtIssues.post('/:projectname/dl', (req, res, next) => {
+  console.log('Post download');
+});
 
-    Promise.all(files.map((file) => {
-      return api.gitdata.createBlob({                                            // it 'resets' to normal when the page is refreshed
+//Upload ifc
+rtIssues.post('/:projectname/ulifc', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let repository = { owner: project[1], repo: project[0], sha:  req.body.data.sha };
+  //Check repo on last commit
+  api.repos.getCommit(repository)
+  .then((resolve) => {
+    let targetFile; //File to be updated
+    for(let i = 0; i < resolve.data.files.length; i++)
+      if(resolve.data.files[i].filename.includes('.ifc')){
+        targetFile = resolve.data.files[i];
+        break;
+      }
+
+    let file = {
+      owner: repository.owner,
+      repo: repository.repo,
+      path: targetFile.filename,
+      message: req.body.data.message,
+      content: req.body.data.content,
+      sha: targetFile.sha
+    }
+
+    return api.repos.updateFile(file);
+  }).then((resolve) => {
+    res.status(200).send(resolve);
+  }).catch((err) => {
+    console.log('err', err);
+    res.end();
+  })
+
+});
+
+//Upload bcf
+rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+
+  let files = req.body.data,
+      repo  = project[0],
+      owner = project[1],
+      shas = req.body.shas; //Store sha.parentcommit & sha.basetree
+
+  Promise.all(files.map((file) => {
+      console.log('Create blob');
+      return api.gitdata.createBlob({
         owner: owner,
         repo: repo,
         content: file.content,
         encoding: 'utf-8'
       });
-    })).then((blobs) => {
+  })).then((blobs) => {
+      console.log('Create tree');
       return api.gitdata.createTree({
         owner: owner,
         repo: repo,
         tree: blobs.map((blob, index) => {
           return {
-            path: files[index].name.replace('/','@'),
+            path: 'incidencias/' + files[index].name,
             mode: '100644',
             type: 'blob',
             sha: blob.data.sha
           };
         }),
         base_tree : shas.basetree
-      })
-    }).then((tree) => {
+    });
+  }).then((tree) => {
+      console.log('Create commit');
       return api.gitdata.createCommit({
         owner:owner,
         repo: repo,
-        message: "Primera carga del BCF",
+        message: req.body.message,
         tree: tree.data.sha,
         parents: [shas.parentcommit]
       });
-    }).then((commit) => {
+  }).then((commit) => {
+      console.log('Updated ref');
       return api.gitdata.updateReference({
         owner: owner,
         repo: repo,
@@ -90,9 +110,14 @@ rtIssues.post('/:projectname', (req, res, next) => {
         sha: commit.data.sha,
         force: false
       });
-    });
-  }
-  res.sendStatus(200);
+  }).then((resp) => {
+    console.log(resp);
+    res.status(200).send(resp);
+  }).catch((err) => {
+    console.log('Err', err);
+    res.sendStatus(409);
+  })
+
 });
 
 module.exports = rtIssues;

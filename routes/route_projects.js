@@ -4,35 +4,16 @@ var express       = require('express'),
     mongoose      = require('mongoose'),
     api           = new require('github')({host: 'api.github.com'}),
     UserConfig    = require('../config/db_model.js'),
-    userInfo      = {},
     rtProjects    = express.Router();
 
 rtProjects.use(bodyparser.json({limit:'70mb'}));
 
-//checkAuth
-var checkAuth = (req, res, next) => {
-  if(req.session.username && req.session.password){
-    api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-    api.users.get({}, (err, json) => {
-      if(err){
-        console.log('Errror', err);
-        res.redirect('/?badLogin=true');
-      }
-      else{
-        userInfo = {name : json.data.login, avatar : json.data.avatar_url, email : json.data.email};
-        next();
-      }
-    });
-  } else {
-    res.redirect('/?badLogin=true');
-  }
-}
-
 //Displays all the repositories where the user has contributed to.
-rtProjects.get('/', checkAuth, (req, res, next) => {
+rtProjects.get('/', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
 
   api.repos.getAll({},  function(apierr, json) {
-    UserConfig.find({name: userInfo.name}, function (errmg, data){
+    UserConfig.find({name: req.session.userInfo.name}, function (errmg, data){
       let list = json.data.map((item) => { return {'name': item.name , 'owner': item.owner.login}}); //name&owner each repo in github
       if(data.length > 0 ){
         let sync = data[0].repos.map((item) => { return JSON.stringify(item); } ); //name&owner each repo in mongoose stringified to be compared in marked
@@ -40,16 +21,17 @@ rtProjects.get('/', checkAuth, (req, res, next) => {
           if(sync.includes(JSON.stringify(item))) return {'name': item.name , 'owner': item.owner, 'marked' : true};
           else                                    return {'name': item.name , 'owner': item.owner, 'marked' : false};
         });
-        res.render('pages/view_projects.ejs', {user : userInfo, sync : marked});
+        res.render('pages/view_projects.ejs', {user : req.session.userInfo, sync : marked});
       } else
-        res.render('pages/view_projects.ejs', {user : userInfo, sync : list});
+        res.render('pages/view_projects.ejs', {user : req.session.userInfo, sync : list});
     });
   });
 
 });
 
 //Creates a repository on github
-rtProjects.post('/create', checkAuth, (req, res, next) => {
+rtProjects.post('/create', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   let project    = req.body.data,
       repository = {  name : project.name,
                       private: (project.type == 'private') ? true : false,
@@ -58,7 +40,7 @@ rtProjects.post('/create', checkAuth, (req, res, next) => {
                       has_projects:false,
                       has_downloads: true
                     },
-      file       = {  owner: userInfo.name,
+      file       = {  owner: req.session.userInfo.name,
                       repo: project.name,
                       path: project.path,
                       message: "Proyecto inicial(IFC)",
@@ -70,12 +52,10 @@ rtProjects.post('/create', checkAuth, (req, res, next) => {
       else{
         if(project.content){
           api.repos.createFile(file, (err, json) => {
-            console.log('Created file');
             if(err) res.status(400).send(err)   //Bad request
             else    res.status(200).send(json); //OK
           });
         } else{
-          console.log('File not');
           res.status(200).send(data);
         }
       }
@@ -83,8 +63,8 @@ rtProjects.post('/create', checkAuth, (req, res, next) => {
 });
 
 //Deletes a project
-rtProjects.post('/delete', checkAuth, (req, res, next) => {
-
+rtProjects.post('/delete', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   //FIXME api.repos.removeCollaborator({owner: 'alehdezp', repo:'ejemplo-fran', username : 'franjpr'}, (err,json) => {});
 
   let project = req.body.repo;
@@ -97,10 +77,9 @@ rtProjects.post('/delete', checkAuth, (req, res, next) => {
 
 //Updates the list stored in mongo db
 rtProjects.post('/update', (req, res, next) => {
-  let user = {'name': userInfo.name, 'repos' : req.body.data};
-  UserConfig.findOneAndUpdate({'name' : userInfo.name}, {$set : user}, {upsert:true, overwrite:true}, (err, data) => {
+  let user = {'name': req.session.userInfo.name, 'repos' : req.body.data};
+  UserConfig.findOneAndUpdate({'name' : req.session.userInfo.name}, {$set : user}, {upsert:true, overwrite:true}, (err, data) => {
     if(err){
-      console.log(err);
       res.sendStatus(404); //User not found
     } else {
       res.sendStatus(200);

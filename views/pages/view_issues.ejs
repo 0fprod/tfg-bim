@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html>
   <% include ../partials/head %>
-  <script src="/js/sidemenu.js" charset="utf-8"></script>
   <script src="/js/user_issues.js" charset="utf-8"></script>
   <body>
-    <%- include('../partials/sidemenu', {user : user}) %>
+    <%- include('../partials/menu', {user : user}) %>
 
     <div class="content">
       <div id="header">
-        <div class="page-title">
-            <%= title %>
+        <div class="page-title" owner="<%=project.owner%>">
+            <%= project.name %>
         </div>
         <div class="panel">
           <select class="" name="commits">
             <% for(i = 0; i < commits.length; i++){ %>
               <option class="options" sha="<%= commits[i].sha %>" btree="<%= commits[i].commit.tree.sha %>" title="<%= commits[i].commit.message %>" value="">
-                <%= commits[i].commit.author.name + ' - ' + parseDate(commits[i].commit.author.date) + ' - ' + commits[i].commit.message %>
+                <%= new Date(commits[i].commit.author.date).toLocaleDateString() + '/' + commits[i].commit.author.name + '/' + commits[i].commit.message %>
               </option>
             <% } %>
           </select>
-          <i id="update" title="Actualizar" class="fa fa-refresh fa-2x"></i>
+          <i id="display-issues" title="Actualizar" class="fa fa-refresh fa-2x"></i>
         </div>
       </div>
       <div class="repo-container">
@@ -28,7 +27,7 @@
 
       <div id="button-container">
         <input id="uploadfile" style="display:none;"type="file"/>
-        <div id="download" title="Descargar proyecto" class="bcf-tool tool-blue">
+        <div id="downloadbtn" title="Descargar proyecto" class="bcf-tool tool-blue">
           <i class="fa fa-cloud-download fa-2x"></i>
         </div>
         <div id="uploadbtn" class="bcf-tool tool-red">
