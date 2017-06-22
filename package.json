@@ -35,6 +35,6 @@
     "express-session": "^1.15.2",
     "github": "^9.2.0",
     "mongoose": "^4.9.3",
-    "path": "^0.12.7",
+    "path": "^0.12.7"
   }
 }
