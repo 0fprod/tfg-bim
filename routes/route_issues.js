@@ -3,6 +3,7 @@ var express    = require('express'),
     bluebird   = require('bluebird'),
     api        = new require('github')({host: 'api.github.com', Promise : bluebird}),
     bodyparser = require('body-parser'),
+    _          = require('underscore'),
     rtIssues   = express.Router();
 
 rtIssues.use(bodyparser.json({limit:'70mb'}));
@@ -11,7 +12,6 @@ rtIssues.use(bodyparser.urlencoded({limit:'70mb', extended: true}));
 rtIssues.get('/:projectname', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   let repo = req.params.projectname.split('-'); //[0] projectname - [1] project owner
-  //TODO what if multiple owners has repo with the same name
   //TODO if the repository does not exist,somehow delete it from mongoDB
   api.repos.getCommits({"owner" : repo[1], "repo" : repo[0]}, (err, json) => {
     if(err)  console.log(err);
@@ -20,9 +20,62 @@ rtIssues.get('/:projectname', (req, res, next) => {
   });
 });
 
+//Display issues
+rtIssues.post('/:projectname/getissues', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let tree = { owner: project[1], repo: project[0], sha: req.body.sha, recursive: true}
+  let issuesOrderedByContent = [];
+  api.gitdata.getTree(tree).then((res) => {
+    let markupsAndSnapshotsOnly = _.filter(res.data.tree, (item) => {return (item.path.includes('markup') || item.path.includes('snapshot')); });
+    let blobsByFolder = _.groupBy(markupsAndSnapshotsOnly, (item) => {return item.path.substring(0, item.path.lastIndexOf('/')); })
+    let blobsContent = [];
+
+    Object.keys(blobsByFolder).forEach((blob) => {
+      blobsByFolder[blob].forEach((file) => {
+        issuesOrderedByContent.push({[file.path.substring(0, file.path.indexOf('.'))]: ''});
+        blobsContent.push(api.gitdata.getBlob({owner: tree.owner, repo: tree.repo, sha: file.sha}));
+      });
+    })
+    return Promise.all(blobsContent)
+  }).then((issues) => {
+    //Assign content to the respective issue
+     issuesOrderedByContent.forEach((item, index) => {
+       item[Object.keys(item)[0]] = issues[index].data.content;
+     });
+
+     let issuesOrderedByName = []; // final items content = {name:'foldername', markup: b64, snapshot: b64}
+     issuesOrderedByContent.forEach((item) => {
+       let folderName = Object.keys(item)[0].substring(0, Object.keys(item)[0].lastIndexOf('/'));
+       let propertyName = Object.keys(item)[0].substring(Object.keys(item)[0].lastIndexOf('/') + 1);
+       let content = item[Object.keys(item)[0]];
+       let issue = { name : folderName, [propertyName] : content };
+
+       if ((issuesOrderedByName.length > 0) && (_.last(issuesOrderedByName).name == folderName))
+         Object.assign(_.last(issuesOrderedByName), issue);
+       else
+         issuesOrderedByName.push(issue);
+
+     });
+
+    res.status(200).send(issuesOrderedByName);
+  }).catch((err) => {
+    console.log('Err', err);
+    res.status(409).send(err);
+  })
+
+});
+
 //Download ifc/bcf as zip
-rtIssues.post('/:projectname/dl', (req, res, next) => {
-  console.log('Post download');
+rtIssues.post('/:projectname/download', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let file = {owner: project[1], repo: project[0], archive_format: 'zipball', ref: req.body.ref}
+  api.repos.getArchiveLink(file).then((resp) => {
+    //FIXME how to send files to client
+  }).catch((err) => {
+    console.log(err);
+  });
 });
 
 //Upload ifc
@@ -70,7 +123,7 @@ rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
       shas = req.body.shas; //Store sha.parentcommit & sha.basetree
 
   Promise.all(files.map((file) => {
-      console.log('Create blob');
+      console.log('Create blob', file.name);
       return api.gitdata.createBlob({
         owner: owner,
         repo: repo,

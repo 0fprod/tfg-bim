@@ -106,7 +106,7 @@
 
     //Creates the project at github
     $('#push').on('click', (evt) => {
-      if($('input[type=text]').val() == ''){
+      if($('input[type=file]').val() == ''){
         $.alert({
           title: 'Error',
           content: 'Debe subir un fichero .ifc para poder crear el proyecto.',
