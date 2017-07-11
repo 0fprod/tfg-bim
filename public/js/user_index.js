@@ -1,5 +1,6 @@
-(function (){
-  $('document').ready(function(){
+/* jshint esversion: 6 */
+(() => {
+  $('document').ready(() => {
     //Login animation
     $('#login').toggleClass('stop');
 
@@ -11,6 +12,8 @@
         boxWidth: '30%',
         icon: 'fa fa-times',
         type: 'red',
+        escapeKey:true,
+        backgroundDismiss: true,
         buttons : {
           ok : () => {
             window.location = goHome(window.location);
@@ -37,9 +40,15 @@
             useBootstrap: false,
             boxWidth: '30%',
             icon: 'fa fa-check',
-            type: 'green'
+            type: 'green',
+            autoClose: 'ok|1000',
+            onDestroy: () => {
+              window.location =  data.redirectTo;
+            },
+            ok: () => {
+              window.location =  data.redirectTo;
+            }
           });
-          window.location += 'u/' + $('#uname').val();
         },
         error: (err) => {
           $('.overlay').css('display','none');
@@ -53,16 +62,16 @@
             type: 'red'
           });
         }
-      })
+      });
     });
 
     //Encode to x-www-form-urlencoded
     let encode = (obj) => {
       let str = [];
-      for(p in obj)
-        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]))
+      for(let p in obj)
+        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
       return str.join('&');
-    }
+    };
 
     //Removes query & paths from str
     let goHome = (str) => {
@@ -76,7 +85,7 @@
         c++;
       }
       return url.substring(0, index);
-    }
+    };
 
   });
 }).call(this);

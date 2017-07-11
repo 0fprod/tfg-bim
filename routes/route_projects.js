@@ -1,7 +1,7 @@
+/* jshint esversion: 6 */
 var express       = require('express'),
     bodyparser    = require('body-parser'),
     session       = require('express-session'),
-    mongoose      = require('mongoose'),
     api           = new require('github')({host: 'api.github.com'}),
     UserConfig    = require('../config/db_model.js'),
     rtProjects    = express.Router();
@@ -14,7 +14,7 @@ rtProjects.get('/', (req, res, next) => {
 
   api.repos.getAll({},  function(apierr, json) {
     UserConfig.find({name: req.session.userInfo.name}, function (errmg, data){
-      let list = json.data.map((item) => { return {'name': item.name , 'owner': item.owner.login}}); //name&owner each repo in github
+      let list = json.data.map((item) => { return {'name': item.name , 'owner': item.owner.login};}); //name&owner each repo in github
       if(data.length > 0 ){
         let sync = data[0].repos.map((item) => { return JSON.stringify(item); } ); //name&owner each repo in mongoose stringified to be compared in marked
         let marked = list.map((item) => {
@@ -48,11 +48,12 @@ rtProjects.post('/create', (req, res, next) => {
                     };
 
   api.repos.create(repository, (err, data) => {
-      if(err) res.status(400).send(err)
+      if(err)
+        res.status(400).send(err);
       else{
         if(project.content){
           api.repos.createFile(file, (err, json) => {
-            if(err) res.status(400).send(err)   //Bad request
+            if(err) res.status(400).send(err);   //Bad request
             else    res.status(200).send(json); //OK
           });
         } else{

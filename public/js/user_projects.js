@@ -1,3 +1,4 @@
+/* jshint esversion: 6 */
 (function (){
   $('document').ready( () => {
     var ifcEncoded;  //Updated when #upload-ifc change
@@ -56,7 +57,7 @@
                       console.log('Error! ', err);
                     }
                   }
-                })
+                });
               },
               cancelar: () =>{
                 $.alert({
@@ -72,7 +73,7 @@
 
     //Save projects
     $('#save-projects').on('click', (evt) => {
-      var list = $.map($(".sync"), (item) => {return {"owner" : $(item).attr('owner'), "name" : $(item).attr('name')}});
+      var list = $.map($(".sync"), (item) => {return {"owner" : $(item).attr('owner'), "name" : $(item).attr('name')};});
       //Display syncing icon spinner next to this.
       let syncin = $(document.createElement('i')).attr('id','refresh').addClass('fa fa-refresh fa-spin fa-3x fa-fw');
       $('#button-container').append(syncin);
@@ -102,7 +103,7 @@
     //Dismisses .modal-container
     $('#cancel').on('click', (evt) => {
       $('.modal-container').delay(500).css('top','-100%');
-    })
+    });
 
     //Creates the project at github
     $('#push').on('click', (evt) => {
@@ -169,12 +170,12 @@
     $('#upload-ifc').on('change', (evt) => {
       let file       = evt.target.files[0],
           filereader = new FileReader();
-      filereader.onloadstart = () =>{ $('#loading-icon').css('display','block');}
+      filereader.onloadstart = () =>{ $('#loading-icon').css('display','block');};
       filereader.onload = () => {
         if(file.name.includes('.ifc'))  ifcEncoded = btoa(filereader.result);             //Encode to b64
         else                            $.alert('Error, Archivo desconocido.');
         $('#loading-icon').css('display','none');
-      }
+      };
       filereader.readAsText(file);
     });
 
@@ -185,17 +186,17 @@
           close = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
       $(box).append(text, close);
       $('.repo-container').append(box);
-    }
+    };
 
     //String to lowercase, convert spaces to dashes
     var parseFileName = (name) => {
       return name.substr(name.lastIndexOf('\\') + 1).replace(/[_\s]+/g, '-').toLowerCase();
-    }
+    };
 
     //String to lowercase, convert spaces to dashes
     var parseProjectName = (name) => {
       return name.replace(/[_\s]+/g, '-').toLowerCase();
-    }
+    };
 
   }); //End of docReady
 }).call(this);
