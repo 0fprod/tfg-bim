@@ -299,7 +299,7 @@ rtIssues.post('/:projectname/removecollab', (req, res, next) => {
   .then((resolve) => {
     console.log('Encontrado en mlabl ', resolve);
     if(resolve.length > 0){
-      resolve[0].repos.forEach((repo, index) => { if(item.name == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
+      resolve[0].repos.forEach((repo, index) => { if(project[0] == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
       let user = {
                   name: resolve[0].name,
                   repos : resolve[0].repos

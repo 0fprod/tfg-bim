@@ -86,6 +86,8 @@
         displayCollabs(resolve);
       })
       .catch((err) => {
+        $('.overlay').css('display','none');
+        $('#loading-icon').css('display','none');
         $.notify('Debes pertenecer al proyecto para poder ver los colaboradores', 'error');
       });
     });
