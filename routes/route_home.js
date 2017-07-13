@@ -6,8 +6,8 @@ var express    = require('express'),
     rtIssues   = require('./route_issues.js'),
     rtHome     = express.Router();
 
- mongoose.connect('mongodb://admin:admin@ds151070.mlab.com:51070/tfgbim'); //DefaultServer pool = 4
-
+mongoose.connect('mongodb://admin:admin@ds151070.mlab.com:51070/tfgbim'); //DefaultServer pool = 4
+mongoose.Promise = require('bluebird');
 
 rtHome.use('/:username/projects', rtProjects);
 rtHome.use('/:username/projects/p', rtIssues);

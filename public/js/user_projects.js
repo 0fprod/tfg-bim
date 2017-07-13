@@ -73,7 +73,7 @@
 
     //Save projects
     $('#save-projects').on('click', (evt) => {
-      var list = $.map($(".sync"), (item) => {return {"owner" : $(item).attr('owner'), "name" : $(item).attr('name')};});
+      var list = $.map($(".sync"), (item) => {return {"owner" : $(item).attr('owner'), "id":  parseInt($(item).attr('value')), "name" : $(item).attr('name')};});
       //Display syncing icon spinner next to this.
       let syncin = $(document.createElement('i')).attr('id','refresh').addClass('fa fa-refresh fa-spin fa-3x fa-fw');
       $('#button-container').append(syncin);
@@ -135,7 +135,7 @@
             //console.log(res);
             $('.overlay').css('display','none');
             $('#loading-icon').css('display','none');
-            addProjectComponent($('#username').text().trim(), project.name);
+            addProjectComponent($('#username').text().trim(), project.name , res.id);
             $('#cancel').click();
           },
           error: (err) => {
@@ -180,9 +180,9 @@
     });
 
     //Append .project div to .repo-container
-    var addProjectComponent = (projectOwner, projectName) => {
+    var addProjectComponent = (projectOwner, projectName, projectId) => {
       let box   = $(document.createElement('div')).addClass('project'),
-          text  = $(document.createElement('div')).attr({owner: projectOwner, name: projectName}).text(projectName),
+          text  = $(document.createElement('div')).attr({owner: projectOwner, value: projectId, name: projectName}).text(projectName),
           close = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
       $(box).append(text, close);
       $('.repo-container').append(box);

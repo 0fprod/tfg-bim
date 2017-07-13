@@ -2,13 +2,13 @@
 (() => {
   $('document').ready(() => {
 
-    $('#edit').on('click', (evt) => {
+    $('.edit-project').on('click', (evt) => {
 
       $.ajax({
         type: 'GET',
-        url: '' + $('#edit').attr('link'),
+        url: '' + $(evt.currentTarget).attr('link'),
         success: () => {
-          window.location = $('#edit').attr('link');
+          window.location = $(evt.currentTarget).attr('link');
         },
         error: (err) => {
           $.alert({
@@ -24,9 +24,6 @@
 
     });
 
-    $('#edit').on('click', (evt) => {
-
-    });
 
   });
 }).call(this);

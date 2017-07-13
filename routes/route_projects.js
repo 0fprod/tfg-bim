@@ -14,12 +14,12 @@ rtProjects.get('/', (req, res, next) => {
 
   api.repos.getAll({},  function(apierr, json) {
     UserConfig.find({name: req.session.userInfo.name}, function (errmg, data){
-      let list = json.data.map((item) => { return {'name': item.name , 'owner': item.owner.login};}); //name&owner each repo in github
+      let list = json.data.map((item) => { return {'name': item.name , 'id': item.id, 'owner': item.owner.login};}); //name&owner each repo in github
       if(data.length > 0 ){
         let sync = data[0].repos.map((item) => { return JSON.stringify(item); } ); //name&owner each repo in mongoose stringified to be compared in marked
         let marked = list.map((item) => {
-          if(sync.includes(JSON.stringify(item))) return {'name': item.name , 'owner': item.owner, 'marked' : true};
-          else                                    return {'name': item.name , 'owner': item.owner, 'marked' : false};
+          if(sync.includes(JSON.stringify(item))) return {'name': item.name , 'id': item.id, 'owner': item.owner, 'marked' : true};
+          else                                    return {'name': item.name , 'id': item.id, 'owner': item.owner, 'marked' : false};
         });
         res.render('pages/view_projects.ejs', {user : req.session.userInfo, sync : marked});
       } else
@@ -54,7 +54,7 @@ rtProjects.post('/create', (req, res, next) => {
         if(project.content){
           api.repos.createFile(file, (err, json) => {
             if(err) res.status(400).send(err);   //Bad request
-            else    res.status(200).send(json); //OK
+            else    res.status(200).send({id: data.data.id, json: json}); //OK
           });
         } else{
           res.status(200).send(data);
@@ -66,8 +66,6 @@ rtProjects.post('/create', (req, res, next) => {
 //Deletes a project
 rtProjects.post('/delete', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  //FIXME api.repos.removeCollaborator({owner: 'alehdezp', repo:'ejemplo-fran', username : 'franjpr'}, (err,json) => {});
-
   let project = req.body.repo;
 
   api.repos.delete(project, (err, json) => {

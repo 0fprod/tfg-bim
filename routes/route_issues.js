@@ -4,6 +4,7 @@ var express    = require('express'),
     bluebird   = require('bluebird'),
     api        = new require('github')({host: 'api.github.com', Promise : bluebird}),
     bodyparser = require('body-parser'),
+    UserConfig    = require('../config/db_model.js'),
     _          = require('underscore'),
     rtIssues   = express.Router();
 
@@ -75,15 +76,54 @@ rtIssues.post('/:projectname/getissues', (req, res, next) => {
 
 });
 
-//Download ifc/bcf as zip
-rtIssues.post('/:projectname/download', (req, res, next) => {
+//Download ifc
+rtIssues.post('/:projectname/dlifc' , (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   let project = req.params.projectname.split('-');
-  let file = {owner: project[1], repo: project[0], archive_format: 'zipball', ref: req.body.ref};
-  api.repos.getArchiveLink(file).then((resp) => {
-    //FIXME how to send files to client
-  }).catch((err) => {
-    console.log(err);
+  let tree = { owner: project[1], repo: project[0], sha: req.body.treesha, recursive: true};
+  let blobName = "";
+
+  api.gitdata.getTree(tree) //Request tree recursively
+  .then((resolve) => {
+    let blobs = _.filter(resolve.data.tree, (item) => { return item.path.includes('.ifc'); });
+    blobName = blobs[0].path;
+    return api.gitdata.getBlob({owner: project[1], repo: project[0], sha: blobs[0].sha});
+  })
+  .then((resolve) => {
+    let finalBlob = {name: blobName, content: resolve.data.content};
+    res.status(200).send(finalBlob);
+  })
+  .catch((reject) => {
+    console.log('Err', reject);
+  });
+});
+
+//Download bcf
+rtIssues.post('/:projectname/dlbcf', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let tree = { owner: project[1], repo: project[0], sha: req.body.treesha, recursive: true};
+  let blobsOrderedByName = [];
+
+  api.gitdata.getTree(tree) //Request tree recursively
+  .then((resolve) => {
+      let blobs = _.filter(resolve.data.tree, (item) => { return item.type == 'blob' && !item.path.includes('.ifc'); });
+      let blobsContent = [];
+      blobs.forEach((blob) => {
+        blobsOrderedByName.push(blob.path);
+        blobsContent.push(api.gitdata.getBlob({owner: project[1], repo: project[0], sha: blob.sha}));
+      });
+    return Promise.all(blobsContent);
+    })
+  .then((resolve) => {
+    let finalBlobs = [];
+    blobsOrderedByName.forEach((item, index) => {
+      finalBlobs.push({name: item, content: resolve[index].data.content});
+    });
+    res.status(200).send(finalBlobs);
+  })
+  .catch((reject) => {
+    console.log('Err', reject);
   });
 });
 
@@ -178,6 +218,7 @@ rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
 
 });
 
+//Updates the issues content
 rtIssues.post('/:projectname/updatemarkup', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   let project = req.params.projectname.split('-');
@@ -200,4 +241,82 @@ rtIssues.post('/:projectname/updatemarkup', (req, res, next) => {
   });
 
 });
+
+//AdminCollaborators
+rtIssues.post('/:projectname/collabs', (req, res, next) => {
+  api.authenticate({type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let github_list, mlab_list;
+
+  api.repos.getForUser({username:req.session.username})
+  .then((resolve) => {
+    github_list = _.map(resolve.data, (repo) => { return JSON.stringify({"name": repo.name, "id": repo.id, "owner": repo.owner.login});});
+    return UserConfig.find({name: req.session.username}).exec();
+  })
+  .then((resolve) => {
+    mlab_list = _.map(resolve[0].repos, (repo) => { return (repo.name == project[0]) ? JSON.stringify(repo) : ''; });
+    return api.repos.getCollaborators({owner: project[1], repo: project[0]});
+  })
+  .then((resolve) => {
+    let inter = _.intersection(github_list, mlab_list);
+    let owner = (inter.length > 0) ? true : false;
+    res.send({collabs: resolve.data, owner: owner});
+  })
+  .catch((err) =>{
+    console.log('err', err);
+    res.status(403).end();
+  });
+
+});
+
+//Add Collaborator
+rtIssues.post('/:projectname/addcollab', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let repo = {owner: project[1], repo: project[0], username : req.body.user};
+
+  api.repos.addCollaborator(repo)
+  .then((resolve) => {
+    res.status(201).end();
+  })
+  .catch((reject) => {
+    res.status(404).end();
+  });
+});
+
+//Remove Collaborator
+rtIssues.post('/:projectname/removecollab', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let project = req.params.projectname.split('-');
+  let repo = {owner: project[1], repo: project[0], username : req.body.user};
+  console.log(repo);
+  api.repos.removeCollaborator(repo)
+  .then((resolve) => {
+    console.log('Eliminado de github', resolve);
+    //Buscar el user borrado en mlab, y quitar este repo de sus favoritos.
+    return UserConfig.find({name: req.body.user}).exec();
+  })
+  .then((resolve) => {
+    console.log('Encontrado en mlabl ', resolve);
+    if(resolve.length > 0){
+      resolve[0].repos.forEach((repo, index) => { if(item.name == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
+      let user = {
+                  name: resolve[0].name,
+                  repos : resolve[0].repos
+                };
+      return UserConfig.findOneAndUpdate({'name' : req.body.user}, {$set : user}, {upsert:true, overwrite:true}).exec();
+    } else {
+      res.status(204).end();
+    }
+  })
+  .then((resolve) => {
+    console.log('Eliminado supuestamente de mlab');
+    res.status(204).end();
+  })
+  .catch((reject) => {
+    console.log('err', reject);
+    res.status(404).end();
+  });
+});
+
 module.exports = rtIssues;

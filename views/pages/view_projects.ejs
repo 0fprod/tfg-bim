@@ -14,11 +14,11 @@
         <% for(i = 0; i < sync.length; i++) { %>
           <div class="project">
               <% if (sync[i].marked) {%>
-                <div class="sync" owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
+                <div class="sync" owner="<%=sync[i].owner%>" value="<%=sync[i].id%>" name="<%=sync[i].name%>">
                   <%= sync[i].name %> <i class="fa fa-check-circle synced"></i>
                 </div>
               <% } else { %>
-                <div owner="<%= sync[i].owner %>" name="<%= sync[i].name %>">
+                <div owner="<%= sync[i].owner %>" value="<%=sync[i].id%>" name="<%= sync[i].name %>">
                   <%= sync[i].name %>
                 </div>
               <% } %>
