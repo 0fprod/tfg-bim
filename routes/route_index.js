@@ -8,10 +8,14 @@ var express    = require('express'),
 
 rtIndex.use(bodyparser.urlencoded({limit:'70mb', extended:true}));
 rtIndex.use(session({
-    cookieName: 'session',
+    name: 'sessionID',
     secret: 'tfg-secret',
     resave: true,
-    saveUninitialized : true
+    saveUninitialized : true,
+    cookie: { secure: true,
+            httpOnly: true,
+            expires: new Date( Date.now() + 60 * 60 * 1000 ) // 1 hour
+          }
 }));
 
 var checkSession = (req, res, next) => {
