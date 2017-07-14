@@ -1,23 +1,22 @@
 /* jshint esversion: 6*/
 var express    = require('express'),
+    session    = require('express-session'),
     api        = new require('github')({host: 'api.github.com'}),
     bodyparser = require('body-parser'),
-    session    = require('express-session'),
     rtHome     = require('./route_home.js'),
     rtIndex    = express.Router();
 
 rtIndex.use(bodyparser.urlencoded({limit:'70mb', extended:true}));
 rtIndex.use(session({
-    name: 'sessionID',
     secret: 'tfg-secret',
     resave: true,
     saveUninitialized : true,
+    name: 'sessionID',
     cookie: { secure: true,
             httpOnly: true,
             expires: new Date( Date.now() + 60 * 60 * 1000 ) // 1 hour
           }
 }));
-
 var checkSession = (req, res, next) => {
   if(req.session.username && req.session.password)
     next();

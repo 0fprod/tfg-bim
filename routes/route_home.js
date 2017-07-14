@@ -1,6 +1,7 @@
 /* jshint esversion: 6 */
 var express    = require('express'),
     mongoose   = require('mongoose'),
+    session    = require('express-session'),
     UserConfig = require('../config/db_model.js'),
     rtProjects = require('./route_projects.js'),
     rtIssues   = require('./route_issues.js'),
