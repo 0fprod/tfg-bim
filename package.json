@@ -39,6 +39,7 @@
     "fs": "0.0.1-security",
     "github": "^9.2.0",
     "helmet": "^3.6.1",
+    "http": "0.0.0",
     "https": "^1.0.0",
     "mongoose": "^4.9.3",
     "morgan": "^1.8.2",

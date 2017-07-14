@@ -11,8 +11,7 @@ rtIndex.use(session({
     secret: 'tfg-secret',
     resave: true,
     saveUninitialized : true,
-    name: 'sessionID',
-    cookie: { secure: true,
+    cookie: {
             httpOnly: true,
             expires: new Date( Date.now() + 60 * 60 * 1000 ) // 1 hour
           }

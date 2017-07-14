@@ -31,9 +31,9 @@
   function goTo(route){
     var url = window.location.href.split('/');
     if(route){
-      window.location.href = 'https://' + url[2] + route;
+      window.location.href = 'http://' + url[2] + route;
     } else { //go home
-      window.location.href = 'https://' + url[2];
+      window.location.href = 'http://' + url[2];
     }
   }
 }).call(this);
