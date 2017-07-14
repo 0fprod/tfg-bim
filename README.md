@@ -26,4 +26,4 @@ Herramientas para el desarrollo:
     + [Node-GitHub](https://github.com/mikedeboer/node-github)
   + [mLab](https://mlab.com/)
 
-  Enlace a la [app](http://gestorbcf.herokuapp.com)
+  Enlace a la [app](http://bcfmanager.herokuapp.com)
