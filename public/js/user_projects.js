@@ -44,7 +44,7 @@
                             content:'Proyecto eliminado!',
                             boxWidth:'30%'
                            });
-                   $(self).parent().remove();
+                   $(self).parent().effect('fold');
                    $('#save-projects').click();
                   },
                   error: (err) => {
@@ -132,14 +132,13 @@
           contentType: 'application/json',
           url: window.location + "/create",
           success: (res) => {
-            //console.log(res);
             $('.overlay').css('display','none');
             $('#loading-icon').css('display','none');
             addProjectComponent($('#username').text().trim(), project.name , res.id);
             $('#cancel').click();
           },
           error: (err) => {
-            //console.log(err);
+            console.log(err);
             $('.overlay').css('display','none');
             $('#loading-icon').css('display','none');
             if(err.responseJSON.code === 422){ //Upgrade ghAccount
@@ -172,8 +171,19 @@
           filereader = new FileReader();
       filereader.onloadstart = () =>{ $('#loading-icon').css('display','block');};
       filereader.onload = () => {
-        if(file.name.includes('.ifc'))  ifcEncoded = btoa(filereader.result);             //Encode to b64
-        else                            $.alert('Error, Archivo desconocido.');
+        if(file.name.includes('.ifc')){
+          ifcEncoded = btoa(filereader.result);             //Encode to b64
+        } else{
+          $.alert({
+            title: 'Error',
+            content: 'Formato incorrecto.',
+            useBootstrap: false,
+            boxWidth: '30%',
+            type:'red',
+            icon: 'fa fa-warning'
+          });
+          $('#upload-ifc').val("");
+        }
         $('#loading-icon').css('display','none');
       };
       filereader.readAsText(file);
@@ -182,10 +192,14 @@
     //Append .project div to .repo-container
     var addProjectComponent = (projectOwner, projectName, projectId) => {
       let box   = $(document.createElement('div')).addClass('project'),
-          text  = $(document.createElement('div')).attr({owner: projectOwner, value: projectId, name: projectName}).text(projectName),
+          text  = $(document.createElement('div')).attr({owner: projectOwner, value: projectId, name: projectName}).text(projectName).addClass('sync'),
+          check = $(document.createElement('i')).addClass('fa fa-check-circle synced'),
           close = $(document.createElement('i')).addClass('fa fa-times-circle fa-2x delete-repo');
+      $(text).append(check);
       $(box).append(text, close);
       $('.repo-container').append(box);
+      $(box).effect('slide');
+      $('#save-projects').click();
     };
 
     //String to lowercase, convert spaces to dashes
