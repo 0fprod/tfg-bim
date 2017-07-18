@@ -13,9 +13,10 @@ rtIssues.use(bodyparser.urlencoded({limit:'70mb', extended: true}));
 
 rtIssues.get('/:projectname', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let repo = req.params.projectname.split('-'); //[0] projectname - [1] project owner
-
-  api.repos.getCommits({"owner" : repo[1], "repo" : repo[0]}, (err, json) => {
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  api.repos.getCommits({"owner" : repoowner, "repo" : reponame}, (err, json) => {
     if(err){
       res.status('404').end();
     } else{
@@ -27,8 +28,10 @@ rtIssues.get('/:projectname', (req, res, next) => {
 //Display issues
 rtIssues.post('/:projectname/getissues', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let tree = { owner: project[1], repo: project[0], sha: req.body.sha, recursive: true};
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let tree = { owner: repoowner, repo: reponame, sha: req.body.sha, recursive: true};
   let issuesOrderedByContent = [];
   api.gitdata.getTree(tree).then((res) => {
     let markupsAndSnapshotsOnly = _.filter(res.data.tree, (item) => {return (item.path.includes('markup') || item.path.includes('snapshot')); });
@@ -79,15 +82,17 @@ rtIssues.post('/:projectname/getissues', (req, res, next) => {
 //Download ifc
 rtIssues.post('/:projectname/dlifc' , (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let tree = { owner: project[1], repo: project[0], sha: req.body.treesha, recursive: true};
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let tree = { owner: repoowner, repo: reponame, sha: req.body.treesha, recursive: true};
   let blobName = "";
 
   api.gitdata.getTree(tree) //Request tree recursively
   .then((resolve) => {
     let blobs = _.filter(resolve.data.tree, (item) => { return item.path.includes('.ifc'); });
     blobName = blobs[0].path;
-    return api.gitdata.getBlob({owner: project[1], repo: project[0], sha: blobs[0].sha});
+    return api.gitdata.getBlob({owner: repoowner, repo: reponame, sha: blobs[0].sha});
   })
   .then((resolve) => {
     let finalBlob = {name: blobName, content: resolve.data.content};
@@ -101,8 +106,10 @@ rtIssues.post('/:projectname/dlifc' , (req, res, next) => {
 //Download bcf
 rtIssues.post('/:projectname/dlbcf', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let tree = { owner: project[1], repo: project[0], sha: req.body.treesha, recursive: true};
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let tree = { owner: repoowner, repo: reponame, sha: req.body.treesha, recursive: true};
   let blobsOrderedByName = [];
 
   api.gitdata.getTree(tree) //Request tree recursively
@@ -111,7 +118,7 @@ rtIssues.post('/:projectname/dlbcf', (req, res, next) => {
       let blobsContent = [];
       blobs.forEach((blob) => {
         blobsOrderedByName.push(blob.path);
-        blobsContent.push(api.gitdata.getBlob({owner: project[1], repo: project[0], sha: blob.sha}));
+        blobsContent.push(api.gitdata.getBlob({owner:repoowner, repo: reponame, sha: blob.sha}));
       });
     return Promise.all(blobsContent);
     })
@@ -130,8 +137,10 @@ rtIssues.post('/:projectname/dlbcf', (req, res, next) => {
 //Upload ifc
 rtIssues.post('/:projectname/ulifc', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let repository = { owner: project[1], repo: project[0], sha:  req.body.data.sha };
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let repository = { owner: repoowner, repo: reponame, sha:  req.body.data.sha };
   //Check repo on last commit
   api.repos.getCommit(repository)
   .then((resolve) => {
@@ -164,24 +173,26 @@ rtIssues.post('/:projectname/ulifc', (req, res, next) => {
 //Upload bcf
 rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
   let commitInfo = {}; //Esta informacion es la que va a ir en el dropdownlist cuando se termine de crear el commit.
   let files = req.body.data,
-      repo  = project[0],
-      owner = project[1],
+      repox  = reponame,
+      owner = repoowner,
       shas = req.body.shas; //Store sha.parentcommit & sha.basetree
 
   Promise.all(files.map((file) => {
       return api.gitdata.createBlob({
         owner: owner,
-        repo: repo,
+        repo: repox,
         content: file.content,
         encoding: 'utf-8'
       });
   })).then((blobs) => {
       return api.gitdata.createTree({
         owner: owner,
-        repo: repo,
+        repo: repox,
         tree: blobs.map((blob, index) => {
           return {
             path: 'incidencias/' + files[index].name,
@@ -195,7 +206,7 @@ rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
   }).then((tree) => {
       return api.gitdata.createCommit({
         owner:owner,
-        repo: repo,
+        repo: repox,
         message: req.body.message,
         tree: tree.data.sha,
         parents: [shas.parentcommit]
@@ -204,7 +215,7 @@ rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
       commitInfo = commit;
       return api.gitdata.updateReference({
         owner: owner,
-        repo: repo,
+        repo: repox,
         ref: 'heads/master',
         sha: commit.data.sha,
         force: false
@@ -221,10 +232,12 @@ rtIssues.post('/:projectname/ulbcf', (req, res, next) => {
 //Updates the issues content
 rtIssues.post('/:projectname/updatemarkup', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
   let file = {
-    owner: project[1],
-    repo: project[0],
+    owner: repoowner,
+    repo: reponame,
     path: req.body.markup.path,
     message: req.body.markup.message,
     content: req.body.markup.content,
@@ -245,8 +258,9 @@ rtIssues.post('/:projectname/updatemarkup', (req, res, next) => {
 //AdminCollaborators
 rtIssues.post('/:projectname/collabs', (req, res, next) => {
   api.authenticate({type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let github_list, mlab_list;
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();  let github_list, mlab_list;
 
   api.repos.getForUser({username:req.session.username})
   .then((resolve) => {
@@ -254,8 +268,8 @@ rtIssues.post('/:projectname/collabs', (req, res, next) => {
     return UserConfig.find({name: req.session.username}).exec();
   })
   .then((resolve) => {
-    mlab_list = _.map(resolve[0].repos, (repo) => { return (repo.name == project[0]) ? JSON.stringify(repo) : ''; });
-    return api.repos.getCollaborators({owner: project[1], repo: project[0]});
+    mlab_list = _.map(resolve[0].repos, (repo) => { return (repo.name == reponame) ? JSON.stringify(repo) : ''; });
+    return api.repos.getCollaborators({owner: repoowner, repo: reponame});
   })
   .then((resolve) => {
     let inter = _.intersection(github_list, mlab_list);
@@ -272,10 +286,12 @@ rtIssues.post('/:projectname/collabs', (req, res, next) => {
 //Add Collaborator
 rtIssues.post('/:projectname/addcollab', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let repo = {owner: project[1], repo: project[0], username : req.body.user};
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let repox = {owner: project[1], repo: project[0], username : req.body.user};
 
-  api.repos.addCollaborator(repo)
+  api.repos.addCollaborator(repox)
   .then((resolve) => {
     res.status(201).end();
   })
@@ -287,10 +303,12 @@ rtIssues.post('/:projectname/addcollab', (req, res, next) => {
 //Remove Collaborator
 rtIssues.post('/:projectname/removecollab', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
-  let project = req.params.projectname.split('-');
-  let repo = {owner: project[1], repo: project[0], username : req.body.user};
-  console.log(repo);
-  api.repos.removeCollaborator(repo)
+  let repo = req.params.projectname;
+  let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
+  let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
+  let repox = {owner: project[1], repo: project[0], username : req.body.user};
+
+  api.repos.removeCollaborator(repox)
   .then((resolve) => {
     console.log('Eliminado de github', resolve);
     //Buscar el user borrado en mlab, y quitar este repo de sus favoritos.
@@ -299,7 +317,7 @@ rtIssues.post('/:projectname/removecollab', (req, res, next) => {
   .then((resolve) => {
     console.log('Encontrado en mlabl ', resolve);
     if(resolve.length > 0){
-      resolve[0].repos.forEach((repo, index) => { if(project[0] == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
+      resolve[0].repos.forEach((repo, index) => { if(reponame == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
       let user = {
                   name: resolve[0].name,
                   repos : resolve[0].repos
