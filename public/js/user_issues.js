@@ -256,7 +256,6 @@
                             Status: $('#status-list option:selected').val(),
                             Topic: { "_Guid" : currentIssue.content.Topic._Guid}
                          };
-
        if(currentIssue.content.Comment && currentIssue.content.Comment.constructor === Array) {
          currentIssue.content.Comment.push(commentToPush); //Añadir comentario
        } else {
@@ -264,7 +263,7 @@
            currentIssue.content.Comment = [currentIssue.content.Comment];
            currentIssue.content.Comment.push(commentToPush);
          } else { //Si no hay ninguno.
-            currentIssue.content.Comment = currentIssue.content.Comment;
+            currentIssue.content.Comment = commentToPush;
          }
        }
 
