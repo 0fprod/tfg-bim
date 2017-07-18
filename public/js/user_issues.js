@@ -42,13 +42,25 @@
         content: '<p class="dl-link ul"> Examinar ...</p> \n <span> Archivo: <span class="filename"> </span></span> <br> ' + commit_msg,
         onClose: () => {
           if($('#uploadfile').val() != ''){
-            let commit = {  filename: $('#uploadfile')[0].files[0].name,
-                            message: $('#commitmsg').val(),
-                            content: $('#uploadfile')[0].files[0],
-                            sha: ($('select :selected').attr('sha')) ? $('select :selected').attr('sha') : ''
-                          };
-            if(commit.content.name.includes('.ifc'))  uploadIFC(commit);
-            else                                      uploadBCF(commit);
+            if($('#commitmsg').val().match(/\S+/g) != null){
+              let commit = {  filename: $('#uploadfile')[0].files[0].name,
+                              message: $('#commitmsg').val(),
+                              content: $('#uploadfile')[0].files[0],
+                              sha: ($('select :selected').attr('sha')) ? $('select :selected').attr('sha') : ''
+                            };
+              if(commit.content.name.includes('.ifc'))  uploadIFC(commit);
+              else                                      uploadBCF(commit);
+            } else {
+              $.alert({
+                useBootstrap: false,
+                closeIcon: true,
+                boxWidth: '30%',
+                type: 'red',
+                title: 'Error',
+                content: 'Para subir un archivo, debe especificar un mensaje'
+              });
+            }
+
           }
         }
       });
@@ -115,8 +127,10 @@
             url: window.location + '/ulbcf',
             data: {"data": filesToSend, "shas" : shas, "message": commit.message},
             success: (json) => {
+              let text = new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.message;
               let opt = $(document.createElement('option')).attr({sha: json.data.sha, btree: json.data.tree.sha, title: json.data.message})
-              .text(new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.message);
+              .text(formatCommitMessage(text));
+              $('select option').first().prop('selected','selected');
               $('select').prepend(opt).effect('bounce', 'slow');
               $('.overlay').css('display','none');
               $('#loading-icon').css('display','none');
@@ -147,8 +161,10 @@
             $('#loading-icon').css('display','block').css('top','20%');
           },
           success: (json) => {
+            let text = new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.message;
             let opt = $(document.createElement('option')).attr({sha: json.data.commit.sha, btree: json.data.commit.tree.sha, title: json.data.commit.message})
-            .text(new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.commit.message);
+            .text(formatCommitMessage(text));
+            $('select option').first().prop('selected','selected');
             $('select').prepend(opt).effect('bounce', 'slow');
             $('#loading-icon').css('display','none');
           },
@@ -226,8 +242,6 @@
         let msg = issue.content.Comment;
         if(msg){
           chatArea.append($(document.createElement('div')).addClass('msg-sent').append(`<span class="msg-head">[${new Date(msg.Date).toLocaleString()}] <b>${msg.Author}</b>:</span> ${msg.Comment}`));
-        } else {
-            chatArea.append($(document.createElement('div')).addClass('msg-sent'));
         }
       }
 
@@ -454,5 +468,8 @@
       });
     };
 
+    let formatCommitMessage = (text) => {
+    return text.replace(/(\d+)\/(\d+)\/(\d+)-(\w+)-(.+)/g,"$1-$2-$3/$4/$5");
+  };
   }); //End document ready
 }).call(this);
