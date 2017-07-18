@@ -169,9 +169,9 @@
           issue_block = $(document.createElement('div')).addClass('issue-block'),
           issue_prev  = $(document.createElement('img')).addClass('issue-prev').attr('src', preview),
           issue_desc  = $(document.createElement('ol')).addClass('issue-desc'),
-          author      = $(document.createElement('li')).addClass('issue-item').text('Autor: '),
+          author      = $(document.createElement('li')).addClass('issue-item').text((jsonbcf.Markup.Topic.CreationAuthor == undefined) ? 'Autor: -'  : 'Autor: ' +jsonbcf.Markup.Topic.CreationAuthor ),
           date        = $(document.createElement('li')).addClass('issue-item').text('Fecha: ' + new Date(jsonbcf.Markup.Header.File.Date).toLocaleDateString()),
-          assign      = $(document.createElement('li')).addClass('issue-item').text('Asignado a: '),
+          assign      = $(document.createElement('li')).addClass('issue-item').text((jsonbcf.Markup.Topic.AssignedTo == undefined) ? 'Asignado a: -' : 'Asignado a: ' + jsonbcf.Markup.Topic.AssignedTo),
           title       = $(document.createElement('div')).addClass('issue-title').text(jsonbcf.Markup.Topic.Title),
           modifd      = $(document.createElement('li')).addClass('issue-item'),
           modifby     = $(document.createElement('li')).addClass('issue-item'),
@@ -195,6 +195,7 @@
       }
 
       $(issue_desc).append(author, date, assign, modifd, modifby, istatus);
+      $(issue_block).attr('title', (jsonbcf.Markup.Topic.Description == undefined) ? 'Sin descripción' : jsonbcf.Markup.Topic.Description);
       $(issue_block).append(issue_prev, issue_desc, title);
       $('.repo-container').append(issue_block);
       issuesList.push({path: issue.name, content: jsonbcf.Markup, blobsha: issue.blobsha});
