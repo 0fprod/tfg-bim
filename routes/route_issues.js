@@ -289,7 +289,7 @@ rtIssues.post('/:projectname/addcollab', (req, res, next) => {
   let repo = req.params.projectname;
   let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
   let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
-  let repox = {owner: project[1], repo: project[0], username : req.body.user};
+  let repox = {owner: repoowner, repo: reponame, username : req.body.user};
 
   api.repos.addCollaborator(repox)
   .then((resolve) => {
@@ -306,16 +306,14 @@ rtIssues.post('/:projectname/removecollab', (req, res, next) => {
   let repo = req.params.projectname;
   let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
   let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
-  let repox = {owner: project[1], repo: project[0], username : req.body.user};
+  let repox = {owner: repoowner, repo: reponame, username : req.body.user};
 
   api.repos.removeCollaborator(repox)
   .then((resolve) => {
-    console.log('Eliminado de github', resolve);
     //Buscar el user borrado en mlab, y quitar este repo de sus favoritos.
     return UserConfig.find({name: req.body.user}).exec();
   })
   .then((resolve) => {
-    console.log('Encontrado en mlabl ', resolve);
     if(resolve.length > 0){
       resolve[0].repos.forEach((repo, index) => { if(reponame == repo.name) resolve[0].repos.splice(index, 1); }); //Eliminar el repo FIXME si tienes un repo que se llame igual, no garantiza eliminar el adecuado
       let user = {
@@ -328,7 +326,6 @@ rtIssues.post('/:projectname/removecollab', (req, res, next) => {
     }
   })
   .then((resolve) => {
-    console.log('Eliminado supuestamente de mlab');
     res.status(204).end();
   })
   .catch((reject) => {
