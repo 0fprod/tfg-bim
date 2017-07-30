@@ -468,8 +468,9 @@
       });
     };
 
+    //Formats the dd/mm/yyyy-message to dd-mm-yyyy/message
     let formatCommitMessage = (text) => {
-    return text.replace(/(\d+)\/(\d+)\/(\d+)-(\w+)-(.+)/g,"$1-$2-$3/$4/$5");
-  };
+      return text.replace(/(\d+)\/(\d+)\/(\d+)-(\w+)-(.+)/g,"$1-$2-$3/$4/$5");
+    };
   }); //End document ready
 }).call(this);

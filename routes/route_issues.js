@@ -4,7 +4,7 @@ var express    = require('express'),
     bluebird   = require('bluebird'),
     api        = new require('github')({host: 'api.github.com', Promise : bluebird}),
     bodyparser = require('body-parser'),
-    UserConfig    = require('../config/db_model.js'),
+    UserConfig = require('../config/db_model.js'),
     _          = require('underscore'),
     rtIssues   = express.Router();
 
