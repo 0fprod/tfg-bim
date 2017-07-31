@@ -347,18 +347,27 @@
 
     //Request to add collaborator
     let addCollab = (evt) =>{
-      $.post({url: window.location + '/addcollab', data: {user : $('.txt-search-collab').val()}})
-      .then((res) => {
-        $.notify(`El usuario ${$('.txt-search-collab').val()} ha sido agregado como colaborador`,'success');
-        let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', $('.txt-search-collab').val()),
-            username  = $(document.createElement('span')).text($('.txt-search-collab').val());
-        $('.collabs-list').append($(document.createElement('div')).addClass('collaborator').append(deleteBtn, username));
-        $('.txt-search-collab').val("");
-        $(deleteBtn).on('click', removeCollab);
-      })
-      .catch((err) => {
-        $.notify(`No se pudo agregar el usuario ${$('.txt-search-collab').val()}, quizas el nombre de usuario no es correcto`,'error');
-        console.log('err', err);
+
+      $.ajax({
+        type: 'POST',
+        url: window.location + '/addcollab',
+        data: {user : $('.txt-search-collab').val()},
+        success: (res) => {
+          if(!res.hasMail)
+            $.notify(`El usuario ${$('.txt-search-collab').val()} ha sido agregado como colaborador, pero no se le ha podido notificar mediante email`, 'warn');
+          else
+            $.notify(`El usuario ${$('.txt-search-collab').val()} ha sido agregado como colaborador`,'success');
+
+          let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', $('.txt-search-collab').val()),
+              username  = $(document.createElement('span')).text($('.txt-search-collab').val());
+          $('.collabs-list').append($(document.createElement('div')).addClass('collaborator').append(deleteBtn, username));
+          $('.txt-search-collab').val("");
+          $(deleteBtn).on('click', removeCollab);
+        },
+        error: (err) => {
+          $.notify(`No se pudo agregar el usuario ${$('.txt-search-collab').val()}, quizas el nombre de usuario no es correcto`,'error');
+          console.log('err', err);
+        }
       });
     };
 

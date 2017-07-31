@@ -6,6 +6,7 @@ var express    = require('express'),
     bodyparser = require('body-parser'),
     UserConfig = require('../config/db_model.js'),
     _          = require('underscore'),
+    gmail      = require('email-via-gmail'),
     rtIssues   = express.Router();
 
 rtIssues.use(bodyparser.json({limit:'70mb'}));
@@ -290,14 +291,28 @@ rtIssues.post('/:projectname/addcollab', (req, res, next) => {
   let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
   let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
   let repox = {owner: repoowner, repo: reponame, username : req.body.user};
+  let useremail;
 
-  api.repos.addCollaborator(repox)
-  .then((resolve) => {
-    res.status(201).end();
+  api.users.getForUser({username: req.body.user})
+  .then((response) => {
+    useremail = response.data.email;
+    res.status(206).send({hasMail:true}).end();
+    return api.repos.addCollaborator(repox);
   })
-  .catch((reject) => {
+  .then((response) => {
+    if(useremail){
+      let text = `Hola ${req.body.user}!\n Has sido añadido como colaborador en el proyecto ${reponame} de ${repoowner}.`;
+      gmail.login('alu0100503623@gmail.com', '59DiqHTi');
+      gmail.sendEmail("BCFManager - Colaborador", text, useremail);
+      res.status(201).send({hasMail:true}).end();
+    } else {
+      res.status(206).send({hasMail:false}).end();
+    }
+  })
+  .catch((err) => {
     res.status(404).end();
   });
+
 });
 
 //Remove Collaborator

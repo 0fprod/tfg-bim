@@ -31,6 +31,7 @@
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
     "ejs": "^2.5.6",
+    "email-via-gmail": "^1.0.5",
     "express": "^4.15.2",
     "express-session": "^1.15.2",
     "github": "^9.2.0",
