@@ -77,6 +77,30 @@
       $('#uploadfile').click();
     });
 
+    //Notify assigned
+    $('.repo-container').on('click', '.bell-notify', (evt) => {
+      evt.stopPropagation();
+      let index = $('.bell-notify').index($(evt.target));
+      currentIssue = issuesList[index];
+      let usersToNotify = currentIssue.content.Topic.AssignedTo.split(',');
+
+      $.post({
+        url: window.location + '/notify',
+        data: {
+          title: currentIssue.content.Topic.Title,
+          users: usersToNotify
+        }
+      })
+      .then((resolve) => {
+        $.notify(`Se ha enviado un email a los usuarios: ${usersToNotify.join(',')}`, 'success');
+      })
+      .catch((reject) => {
+        console.log('err', reject);
+      });
+
+
+    });
+
     //Displays chat window
     $('.repo-container').on('click', '.issue-block', (evt) => {
       let issue = issuesList[$(evt.currentTarget).index()];
@@ -191,7 +215,8 @@
           title       = $(document.createElement('div')).addClass('issue-title').text(jsonbcf.Markup.Topic.Title),
           modifd      = $(document.createElement('li')).addClass('issue-item'),
           modifby     = $(document.createElement('li')).addClass('issue-item'),
-          istatus     = $(document.createElement('li')).addClass('issue-status');
+          istatus     = $(document.createElement('li')).addClass('issue-status'),
+          bellnotify  = $(document.createElement('i')).addClass('bell-notify fa fa-bell').attr('title', 'Notificar a los asignados');
 
       if(jsonbcf.Markup.Comment) {
         if(jsonbcf.Markup.Comment.constructor === Array){
@@ -212,7 +237,7 @@
 
       $(issue_desc).append(author, date, assign, modifd, modifby, istatus);
       $(issue_block).attr('title', (jsonbcf.Markup.Topic.Description == undefined) ? 'Sin descripción' : jsonbcf.Markup.Topic.Description);
-      $(issue_block).append(issue_prev, issue_desc, title);
+      $(issue_block).append(issue_prev, issue_desc, title, bellnotify);
       $('.repo-container').append(issue_block);
       issuesList.push({path: issue.name, content: jsonbcf.Markup, blobsha: issue.blobsha});
     };
@@ -324,7 +349,7 @@
 
         $(top).append(textfield, addbtn, closeIcon);
         users.forEach((user) => {
-          let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', user),
+          let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', user).attr('title','Eliminar'),
               username  = $(document.createElement('span')).text(user);
           $(collabList).append($(document.createElement('div')).addClass('collaborator').append(deleteBtn, username));
         });
@@ -353,12 +378,13 @@
         url: window.location + '/addcollab',
         data: {user : $('.txt-search-collab').val()},
         success: (res) => {
+          console.log(res);
           if(!res.hasMail)
             $.notify(`El usuario ${$('.txt-search-collab').val()} ha sido agregado como colaborador, pero no se le ha podido notificar mediante email`, 'warn');
           else
             $.notify(`El usuario ${$('.txt-search-collab').val()} ha sido agregado como colaborador`,'success');
 
-          let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', $('.txt-search-collab').val()),
+          let deleteBtn = $(document.createElement('i')).addClass('remove-collab fa fa-minus-circle').attr('value', $('.txt-search-collab').val()).attr('title', 'Eliminar'),
               username  = $(document.createElement('span')).text($('.txt-search-collab').val());
           $('.collabs-list').append($(document.createElement('div')).addClass('collaborator').append(deleteBtn, username));
           $('.txt-search-collab').val("");

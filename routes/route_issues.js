@@ -12,6 +12,7 @@ var express    = require('express'),
 rtIssues.use(bodyparser.json({limit:'70mb'}));
 rtIssues.use(bodyparser.urlencoded({limit:'70mb', extended: true}));
 
+//Displays the issues-view
 rtIssues.get('/:projectname', (req, res, next) => {
   api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
   let repo = req.params.projectname;
@@ -77,6 +78,44 @@ rtIssues.post('/:projectname/getissues', (req, res, next) => {
     console.log('Err', err);
     res.status(409).send(err);
   });
+
+});
+
+//Notify users
+rtIssues.post('/:projectname/notify', (req, res, next) => {
+  api.authenticate({ type: "basic", username: req.session.username, password: req.session.password});
+  let users = req.body.users;
+  let emails = [];
+
+  Promise.all(users.map((user) => {
+    return api.users.getForUser({username: user});
+  }))
+  .then((resolve) => {
+
+    resolve.forEach((user, index) => { //filter only emails
+      let target = {
+        username : user.data.login,
+        mail : user.data.email,
+        issue : req.body.title,
+        proyect: req.params.projectname.substring(0, repo.lastIndexOf('-')).trim()
+      };
+      emails.push(target);
+    });
+
+    //send email to every user
+    emails.forEach((item) => {
+      if(item.mail){
+        let text = `Hola ${item.username}!\n Tienes una asignación en la incidencia '${item.issue}' del proyecto '${item.proyect}'.`;
+        gmail.login('alu0100503623@gmail.com', '59DiqHTi');
+        gmail.sendEmail("BCFManager - Colaborador", text, item.mail);
+      }
+    });
+    res.status(200).end();
+  })
+  .catch((reject) => {
+    res.status(404).end();
+  });
+
 
 });
 
@@ -296,7 +335,6 @@ rtIssues.post('/:projectname/addcollab', (req, res, next) => {
   api.users.getForUser({username: req.body.user})
   .then((response) => {
     useremail = response.data.email;
-    res.status(206).send({hasMail:true}).end();
     return api.repos.addCollaborator(repox);
   })
   .then((response) => {
