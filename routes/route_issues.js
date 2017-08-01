@@ -88,7 +88,7 @@ rtIssues.post('/:projectname/notify', (req, res, next) => {
   let emails = [];
 
   Promise.all(users.map((user) => {
-    return api.users.getForUser({username: user});
+    return api.users.getForUser({username: user.trim()});
   }))
   .then((resolve) => {
 
