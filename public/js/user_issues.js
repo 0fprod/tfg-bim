@@ -185,7 +185,7 @@
             $('#loading-icon').css('display','block').css('top','20%');
           },
           success: (json) => {
-            let text = new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.message;
+            let text = new Date().toLocaleDateString() + ' - ' + $('#username').text().trim()  + ' - ' + json.data.commit.message;
             let opt = $(document.createElement('option')).attr({sha: json.data.commit.sha, btree: json.data.commit.tree.sha, title: json.data.commit.message})
             .text(formatCommitMessage(text));
             $('select option').first().prop('selected','selected');

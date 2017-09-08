@@ -6,7 +6,6 @@ var express    = require('express'),
     rtHome     = require('./route_home.js'),
     rtIndex    = express.Router();
 
-//131 648 781
 rtIndex.use(bodyparser.urlencoded({limit:'70mb', extended:true}));
 rtIndex.use(session({
     secret: 'tfg-secret',
@@ -17,6 +16,7 @@ rtIndex.use(session({
             expires: new Date( Date.now() + 60 * 60 * 1000 ) // 1 hour
           }
 }));
+
 var checkSession = (req, res, next) => {
   if(req.session.username && req.session.password)
     next();

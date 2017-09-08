@@ -181,16 +181,21 @@ rtIssues.post('/:projectname/ulifc', (req, res, next) => {
   let reponame = repo.substring(0, repo.lastIndexOf('-')).trim();
   let repoowner = repo.substring(repo.lastIndexOf('-') + 1).trim();
   let repository = { owner: repoowner, repo: reponame, sha:  req.body.data.sha };
+
   //Check repo on last commit
   api.repos.getCommit(repository)
   .then((resolve) => {
     let targetFile; //File to be updated
-    for(let i = 0; i < resolve.data.files.length; i++)
+
+    let k = 0;
+    while(k < resolve.data.files.length){
       if(resolve.data.files[i].filename.includes('.ifc')){
         targetFile = resolve.data.files[i];
-        break;
+        k = resolve.data.files.length ;
       }
-
+      k++;
+    }
+    
     let file = {
       owner: repository.owner,
       repo: repository.repo,
@@ -199,7 +204,6 @@ rtIssues.post('/:projectname/ulifc', (req, res, next) => {
       content: req.body.data.content,
       sha: targetFile.sha
     };
-
     return api.repos.updateFile(file);
   }).then((resolve) => {
     res.status(200).send(resolve);
