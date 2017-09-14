@@ -59,18 +59,14 @@ rtIssues.post('/:projectname/getissues', (req, res, next) => {
        let propertyName = Object.keys(item)[0].substring(Object.keys(item)[0].lastIndexOf('/') + 1);
        let content = item[Object.keys(item)[0]];
        let issue = {};
-       if (propertyName == 'markup'){
-         issue = { name : folderName, [propertyName] : content , blobsha : item.blobsha};
-       } else {
-         issue = { name : folderName, [propertyName] : content};
-       }
 
+       if (propertyName == 'markup')   issue = { name : folderName, [propertyName] : content , blobsha : item.blobsha};
+       else                            issue = { name : folderName, [propertyName] : content};
 
        if ((issuesOrderedByName.length > 0) && (_.last(issuesOrderedByName).name == folderName))
          Object.assign(_.last(issuesOrderedByName), issue);
        else
          issuesOrderedByName.push(issue);
-
      });
 
     res.status(200).send(issuesOrderedByName);
@@ -195,7 +191,7 @@ rtIssues.post('/:projectname/ulifc', (req, res, next) => {
       }
       k++;
     }
-    
+
     let file = {
       owner: repository.owner,
       repo: repository.repo,
