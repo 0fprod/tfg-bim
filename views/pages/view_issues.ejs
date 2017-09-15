@@ -14,7 +14,7 @@
           <select class="" name="commits">
             <% for(i = 0; i < commits.length; i++){ %>
               <option class="options" sha="<%= commits[i].sha %>" btree="<%= commits[i].commit.tree.sha %>" title="<%= commits[i].commit.message %>" value="">
-                <%= new Date(commits[i].commit.author.date).toLocaleDateString() + '/' + commits[i].commit.author.name + '/' + commits[i].commit.message %>
+                <%= new Date(commits[i].commit.author.date).toLocaleDateString().replace(/\//g,"-") + '/' + commits[i].commit.author.name + '/' + commits[i].commit.message %>
               </option>
             <% } %>
           </select>
